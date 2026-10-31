@@ -167,7 +167,8 @@ textarea{min-height:96px;resize:vertical}
 .out-actions{display:flex;flex-wrap:wrap;gap:10px}
 .contact-direct{display:grid;gap:14px;margin-top:28px}
 .contact-direct div{display:grid;gap:4px}
-.contact-direct strong{font-weight:600;font-size:1.05rem;user-select:all}
+.mail-link{font-weight:700;font-size:1.15rem;color:var(--shutter);text-decoration:none;word-break:break-all}
+.mail-link:hover{text-decoration:underline}
 .status{font-size:var(--s-1);color:var(--muted);min-height:1.2em}
 
 footer{background:var(--ink);color:#C9D1CD;padding-block:36px 44px;font-size:var(--s-1)}
@@ -406,7 +407,9 @@ footer nav a:hover{color:#fff}
         <h2 style="margin-top:12px">Mandami il tuo annuncio. Ti dico cosa cambierei.</h2>
         <p class="lead" style="margin-top:16px">Compila il modulo: preparo un'email già pronta da mandarmi. Ti rispondo con l'analisi entro pochi giorni. Ci sentiamo a voce quando avrai deciso di partire, così non facciamo perdere tempo a nessuno dei due.</p>
         <div class="contact-direct">
-          <div><span class="label">Email</span><strong id="mail-text">giuseppe@hostdalontano.com</strong></div>
+          <div><span class="label">Preferisci scrivermi direttamente?</span><a id="mail-text" class="mail-link" href="mailto:giuseppe@hostdalontano.com?subject=Informazioni%20su%20Host%20da%20Lontano">giuseppe@hostdalontano.com</a></div>
+          <a class="btn btn-ghost" style="justify-self:start" href="mailto:giuseppe@hostdalontano.com?subject=Informazioni%20su%20Host%20da%20Lontano">Scrivimi un'email</a>
+          <p class="hero-note" style="margin-top:0">Rispondo solo via email: il numero di telefono lo condivido quando abbiamo un accordo.</p>
         </div>
       </div>
 
@@ -441,7 +444,7 @@ footer nav a:hover{color:#fff}
 <footer>
   <div class="wrap">
     <span><strong style="color:#fff">Host da Lontano</strong> · Gestione online di case vacanza</span>
-    <nav aria-label="Note legali"><a href="impressum.html">Impressum</a><a href="privacy.html">Privacy</a></nav>
+    <nav aria-label="Note legali"><a href="mailto:giuseppe@hostdalontano.com">giuseppe@hostdalontano.com</a><a href="impressum.html">Impressum</a><a href="privacy.html">Privacy</a></nav>
   </div>
 </footer>
 
