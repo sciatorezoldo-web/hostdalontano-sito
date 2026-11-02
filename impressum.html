@@ -5,27 +5,30 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>Impressum · Host da Lontano</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><path d='M14 50 L60 14 L106 50' fill='none' stroke='%23B9862F' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/><path d='M30 50 V100 M30 75 H58 M58 50 V100' stroke='%231F5A44' stroke-width='9' stroke-linecap='round' fill='none'/><path d='M74 50 V100 H96' stroke='%231F5A44' stroke-width='9' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+<link rel="apple-touch-icon" href="favicon-180.png">
 <style>
 :root{--bg:#FFFFFF;--ink:#16201C;--muted:#56645E;--line:#D5DDD7;--shutter:#1F5A44;--mark:#F3E3BF;
 --font-display:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
 --font-body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color-scheme:light}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);line-height:1.65}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);line-height:1.65;overflow-wrap:break-word}
 main{max-width:720px;margin:0 auto;padding-inline:clamp(16px,4vw,40px);padding-block:40px 64px}
 a{color:var(--shutter)}
-h1{font-family:var(--font-display);font-weight:700;letter-spacing:-.02em;font-size:2.3rem;line-height:1.1;margin:24px 0 8px}
+h1{font-family:var(--font-display);font-weight:700;letter-spacing:-.02em;font-size:clamp(1.6rem,7vw,2.3rem);line-height:1.1;hyphens:auto;margin:24px 0 8px}
 h2{font-family:var(--font-display);font-weight:700;font-size:1.25rem;margin:32px 0 8px}
 p{margin:0 0 10px}
 .muted{color:var(--muted);font-size:.9rem}
 mark{background:var(--mark);color:inherit;padding:0 3px;border-radius:3px}
 .back{font-size:.95rem}
+.links{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:12px 20px;font-size:.9rem}
 </style>
 </head>
 <body>
 <main>
   <a class="back" href="index.html">← Host da Lontano</a>
   <h1>Impressum</h1>
-  <p class="muted">Note legali obbligatorie per le attività registrate in Germania. · Angaben gemäß § 5 DDG.</p>
+  <p class="muted">Note legali obbligatorie in Germania. · Angaben gemäß § 5 DDG.</p>
 
   <h2>Anbieter</h2>
   <p>Giuseppe Cona<br>
@@ -34,13 +37,12 @@ mark{background:var(--mark);color:inherit;padding:0 3px;border-radius:3px}
   Deutschland</p>
 
   <h2>Kontakt</h2>
-  <p>E-Mail: giuseppe@hostdalontano.com</p>
-
-
-  <h2>EU-Streitschlichtung</h2>
+  <p>E-Mail: <a href="mailto:giuseppe@hostdalontano.com">giuseppe@hostdalontano.com</a></p>
+  <h2>Verbraucherstreitbeilegung</h2>
   <p>Ich bin nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
 
-  <p class="muted" style="margin-top:32px">Stand: 31.10.2026</p>
+  <p class="muted" style="margin-top:32px">Stand: 02.11.2026</p>
+  <nav class="links" aria-label="Weitere Seiten"><a href="index.html">Startseite</a><a href="privacy.html">Datenschutz</a></nav>
 </main>
 </body>
 </html>
