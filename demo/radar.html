@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Radar Clienti · Host da Lontano</title>
+<meta name="description" content="Demo del Radar Clienti di Host da Lontano: notti libere, ospiti adatti, eventi, una campagna pronta e il conto rispetto alla commissione.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><path d='M14 50 L60 14 L106 50' fill='none' stroke='%23B9862F' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/><path d='M30 50 V100 M30 75 H58 M58 50 V100' stroke='%231F5A44' stroke-width='9' stroke-linecap='round' fill='none'/><path d='M74 50 V100 H96' stroke='%231F5A44' stroke-width='9' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+<link rel="apple-touch-icon" href="../favicon-180.png">
+<link rel="stylesheet" href="demo.css">
+<style>
+:root{--booked:#2F6B53;--free:#E4EADF;--gap:#B46A12;--gap-soft:#F7EAD6}
+.head{display:grid;gap:14px;padding-block:clamp(40px,7vw,80px) 8px;max-width:860px}
+.house{display:flex;flex-wrap:wrap;gap:6px 14px;color:var(--muted)}
+.house b{color:var(--ink)}
+.summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:28px}
+@media (max-width:640px){.summary{grid-template-columns:minmax(0,1fr)}}
+.sum{border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:2px;background:#fff;min-width:0}
+.sum strong{font-size:2rem;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.sum span{color:var(--muted);font-size:.92rem}
+.step-head{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;align-items:baseline;margin-bottom:20px}
+.num{font-weight:800;color:var(--shutter);font-variant-numeric:tabular-nums}
+.step-head p{grid-column:2;color:var(--muted);max-width:66ch}
+
+/* calendario: panoramica di 6 mesi + dettaglio del mese */
+.cal-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.cal-grid{grid-template-columns:minmax(0,1fr)}}
+.box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
+.strip{display:grid;gap:6px;overflow-x:auto}
+.mrow{display:grid;grid-template-columns:84px minmax(0,1fr) 72px;gap:10px;align-items:center;min-width:520px;border:0;background:transparent;padding:6px 8px;border-radius:10px;cursor:pointer;text-align:left}
+.mrow:hover{background:var(--alt)}
+.mrow[aria-pressed="true"]{background:var(--alt);box-shadow:inset 0 0 0 1.5px var(--shutter)}
+.mrow b{font-size:.9rem}
+.days{display:grid;grid-template-columns:repeat(31,minmax(0,1fr));gap:3px}
+.d{height:16px;border-radius:3px;background:var(--free)}
+.d.b{background:var(--booked)}
+.d.gp{background:var(--gap-soft);box-shadow:inset 0 0 0 1.5px var(--gap)}
+.d.x{background:transparent}
+.freec{font-size:.85rem;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.freec strong{color:var(--ink)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:.85rem;color:var(--muted);margin-top:12px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:14px;height:14px;border-radius:4px;display:inline-block}
+.month-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.wd{text-align:center;font-size:.72rem;font-weight:700;color:var(--muted);padding-bottom:4px}
+.day{text-align:center;border-radius:8px;padding:8px 0;font-size:.85rem;font-weight:600;font-variant-numeric:tabular-nums;background:var(--free)}
+.day.b{background:var(--booked);color:#fff}
+.day.gp{background:var(--gap-soft);box-shadow:inset 0 0 0 1.5px var(--gap);color:var(--brass-ink)}
+.day.x{background:transparent}
+.mstats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.mstats div{background:var(--alt);border-radius:10px;padding:10px 12px;display:grid}
+.mstats strong{font-size:1.3rem;font-variant-numeric:tabular-nums}
+.mstats span{font-size:.82rem;color:var(--muted)}
+.callout{background:var(--gap-soft);border-radius:12px;padding:12px 14px;margin-top:16px}
+.callout strong{color:var(--gap)}
+
+/* ospiti */
+.guests{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:720px){.guests{grid-template-columns:minmax(0,1fr)}}
+.gcard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:10px;align-content:start;min-width:0}
+.gtop{display:flex;justify-content:space-between;align-items:start;gap:10px}
+.fit{flex:none;font-size:.75rem;font-weight:700;border-radius:999px;padding:3px 9px;border:1.5px solid currentColor}
+.fit.high{color:var(--shutter)} .fit.mid{color:var(--brass-ink)}
+dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 12px;font-size:.93rem}
+dt{color:var(--muted);font-weight:600}
+dd{margin:0}
+
+/* eventi */
+.events{list-style:none;margin:0;padding:0;display:grid;border-top:1px solid var(--line)}
+.events li{display:grid;grid-template-columns:150px minmax(0,1fr);gap:4px 16px;padding:14px 0;border-bottom:1px solid var(--line)}
+.events time{font-weight:700;font-variant-numeric:tabular-nums}
+.events p{color:var(--muted);font-size:.93rem}
+@media (max-width:560px){.events li{grid-template-columns:minmax(0,1fr)}}
+
+/* campagna */
+.camp{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:780px){.camp{grid-template-columns:minmax(0,1fr)}}
+.ad{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;max-width:360px}
+.ad-head{display:flex;align-items:center;gap:10px;padding:10px 12px;font-size:.85rem}
+.ad-head i{width:28px;height:28px;border-radius:50%;background:var(--shutter);display:inline-block}
+.ad-head small{display:block;color:var(--muted);font-size:.75rem}
+.ad-img{aspect-ratio:4/5;max-width:100%;background:var(--alt);display:grid;place-items:center;color:var(--muted);font-size:.85rem;font-weight:600;border-block:1px solid var(--line)}
+.ad-body{padding:12px;display:grid;gap:6px;font-size:.92rem}
+.ad-cta{margin:0 12px 12px;border-radius:8px;background:var(--shutter);color:#fff;text-align:center;padding:9px;font-weight:700;font-size:.9rem}
+.plan{display:grid;gap:14px;min-width:0}
+.tr{font-size:.9rem;color:var(--muted);border-left:3px solid var(--line);padding-left:10px}
+.math{background:#fff;border:2px solid var(--shutter);border-radius:16px;padding:16px;display:grid;gap:8px}
+.math table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:.95rem}
+.math td{padding:7px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.math td:last-child{text-align:right;font-weight:700;white-space:nowrap;padding-left:12px}
+.math tr.res td{border-bottom:0;color:var(--shutter)}
+
+/* email */
+.mail{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.mail-head{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;font-size:.93rem}
+.mail-head span{color:var(--muted)}
+.mail-head strong{color:var(--ink)}
+.mail pre{margin:0;padding:16px;white-space:pre-wrap;font-family:var(--font);font-size:.95rem;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <header class="wrap top">
+    <a class="brand" href="index.html" aria-label="Host da Lontano, strumenti per i proprietari">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><path d="M14 50 L60 14 L106 50" fill="none" stroke="#B9862F" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><path d="M30 50 V100 M30 75 H58 M58 50 V100" stroke="#1F5A44" stroke-width="10" stroke-linecap="round" fill="none"/><path d="M74 50 V100 H96" stroke="#1F5A44" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <span>Host da Lontano<small>Strumenti per i proprietari</small></span>
+    </a>
+    <nav class="menu" aria-label="Demo">
+      <a href="index.html" class="hide-sm">Panoramica</a>
+      <a href="concierge.html">Concierge</a>
+      <a href="radar.html" aria-current="page">Radar</a>
+      <a class="btn btn-ghost btn-sm hide-sm" href="../index.html">Sito principale</a>
+    </nav>
+  </header>
+</div>
+<div class="demo-note" role="note"><div class="wrap"><b>Demo</b><span>Casa, prenotazioni, prezzi e date sono esempi. Per una casa vera uso il suo calendario e verifico ogni evento.</span></div></div>
+
+<main>
+  <div class="wrap">
+    <div class="head">
+      <span class="label">Radar Clienti · per trovare ospiti nuovi</span>
+      <h1>Chi può volere la tua casa, e quando.</h1>
+      <p class="lead">Ogni mese guardo i buchi nel calendario, capisco quali ospiti sono adatti alla casa e dove trovarli, e preparo campagne ed email pronte. Tu approvi, io mi occupo del resto.</p>
+      <div class="house"><b>Casa degli Ulivi</b><span>Villa con camino · 6 posti · 3 camere</span><span>15 min da Noto (SR)</span><span>circa 130 € a notte</span></div>
+    </div>
+    <div class="summary">
+      <div class="sum"><strong id="free-total">–</strong><span>notti libere da dicembre a maggio</span></div>
+      <div class="sum"><strong>4</strong><span>tipi di ospiti adatti a questa casa</span></div>
+      <div class="sum"><strong>1</strong><span>campagna pronta per riempire marzo</span></div>
+    </div>
+  </div>
+
+  <section class="band" aria-labelledby="s1">
+    <div class="wrap">
+      <div class="step-head"><span class="num">1</span><h2 id="s1">Dove sono i buchi</h2><p>I prossimi sei mesi a colpo d'occhio. Tocca un mese per vederlo giorno per giorno.</p></div>
+      <div class="cal-grid">
+        <div class="box">
+          <div class="strip" id="strip"></div>
+          <div class="legend"><span><i style="background:var(--booked)"></i>Prenotata</span><span><i style="background:var(--free)"></i>Libera</span><span><i style="background:var(--gap-soft);box-shadow:inset 0 0 0 1.5px var(--gap)"></i>Buco da riempire</span></div>
+        </div>
+        <div class="box" aria-live="polite">
+          <div class="month-head"><h3 id="m-title">Marzo 2027</h3><span class="small">dati di esempio</span></div>
+          <div class="week" id="week"></div>
+          <div class="mstats"><div><strong id="m-free">–</strong><span>notti libere</span></div><div><strong id="m-long">–</strong><span id="m-range">periodo libero più lungo</span></div></div>
+        </div>
+      </div>
+      <p class="callout"><strong>Priorità: 1–24 marzo.</strong> 24 notti libere di fila prima di Pasqua. A gennaio le notti libere sono ancora di più, ma in pieno inverno la richiesta nel sud-est della Sicilia è bassa: lì conviene un prezzo mensile per chi lavora da remoto.</p>
+    </div>
+  </section>
+
+  <section class="band alt" aria-labelledby="s2">
+    <div class="wrap">
+      <div class="step-head"><span class="num">2</span><h2 id="s2">Chi può volere questa casa</h2><p>Dalle caratteristiche della casa e della zona: i tipi di ospiti più adatti, quando viaggiano e dove raggiungerli.</p></div>
+      <div class="guests">
+        <article class="gcard"><div class="gtop"><h3>Famiglie dalla Germania e dall'Austria</h3><span class="fit high">Molto adatta</span></div>
+          <dl><dt>Quando</dt><dd>Marzo–maggio, vacanze di Pasqua</dd><dt>Perché</dt><dd>Clima mite, spazio per 6, camino per le sere fresche</dd><dt>Dove</dt><dd>Pubblicità Instagram e Facebook in Germania e Austria, in tedesco</dd></dl></article>
+        <article class="gcard"><div class="gtop"><h3>Invitati ai matrimoni a Noto</h3><span class="fit high">Molto adatta</span></div>
+          <dl><dt>Quando</dt><dd>Aprile–ottobre, soprattutto nei weekend</dd><dt>Perché</dt><dd>Gruppi di amici o famiglie che cercano dove dormire vicino alla festa</dd><dt>Dove</dt><dd>Email ai wedding planner e alle location della zona</dd></dl></article>
+        <article class="gcard"><div class="gtop"><h3>Chi lavora da remoto</h3><span class="fit mid">Adatta</span></div>
+          <dl><dt>Quando</dt><dd>Gennaio–febbraio, soggiorni di 2–4 settimane</dd><dt>Perché</dt><dd>Inverno al caldo, casa silenziosa, Wi-Fi</dd><dt>Dove</dt><dd>Gruppi online di lavoratori da remoto, con un prezzo mensile</dd></dl></article>
+        <article class="gcard"><div class="gtop"><h3>Turismo delle radici</h3><span class="fit mid">Adatta</span></div>
+          <dl><dt>Quando</dt><dd>Tutto l'anno, di più in primavera ed estate</dd><dt>Perché</dt><dd>Discendenti di siciliani emigrati che vogliono vedere il paese dei nonni</dd><dt>Dove</dt><dd>Gruppi e associazioni di siciliani all'estero, in inglese e spagnolo</dd></dl></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="s3">
+    <div class="wrap">
+      <div class="step-head"><span class="num">3</span><h2 id="s3">Eventi in zona</h2><p>Nei periodi con eventi la casa si vende da sola: si alza il prezzo e si promuove prima degli altri.</p></div>
+      <ul class="events">
+        <li><time>20 dic – 6 gen</time><div><strong>Natale e Capodanno</strong><p>Già quasi tutto prenotato: prezzo più alto e soggiorno minimo di 3 notti.</p></div></li>
+        <li><time>5 – 9 feb 2027</time><div><strong>Carnevale</strong><p>Weekend lungo: offerta per famiglie siciliane e del sud Italia.</p></div></li>
+        <li><time>25 – 29 mar 2027</time><div><strong>Pasqua e Settimana Santa</strong><p>Processioni nei paesi della zona. Già prenotato: la campagna di marzo riempie le settimane prima.</p></div></li>
+        <li><time>metà maggio</time><div><strong>Infiorata di Noto</strong><p>Uno degli eventi più visitati della zona: prezzo più alto e promozione da aprile.</p></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="band alt" aria-labelledby="s4">
+    <div class="wrap">
+      <div class="step-head"><span class="num">4</span><h2 id="s4">La campagna pronta per marzo</h2><p>Il testo lo prepara l'AI e lo controllo io; parte solo se il proprietario lo approva.</p></div>
+      <div class="camp">
+        <div class="ad" aria-label="Anteprima della pubblicità su Instagram">
+          <div class="ad-head"><i aria-hidden="true"></i><div><strong>casadegliulivi</strong><small>Sponsorizzato</small></div></div>
+          <div class="ad-img">Foto della casa</div>
+          <div class="ad-body" lang="de"><strong>Frühling auf Sizilien: Villa mit Kamin für 6</strong><p>Ruhig zwischen Olivenbäumen, 15 Minuten von Noto. 3 Schlafzimmer, Garten, Parkplatz. Im März noch frei: jetzt direkt beim Gastgeber anfragen.</p></div>
+          <div class="ad-cta" lang="de">Freie Termine ansehen</div>
+        </div>
+        <div class="plan">
+          <p class="tr">In italiano: "Primavera in Sicilia: villa con camino per 6. Tranquilla tra gli ulivi, a 15 minuti da Noto. 3 camere, giardino, parcheggio. A marzo è ancora libera: chiedi le date direttamente al proprietario."</p>
+          <div class="box"><dl>
+            <dt>A chi</dt><dd>Famiglie in Germania e Austria, 30–55 anni, interessate a Sicilia e viaggi in famiglia</dd>
+            <dt>Quando</dt><dd>Dal 10 al 24 gennaio, mentre prenotano la primavera</dd>
+            <dt>Budget</dt><dd>7 € al giorno per 14 giorni: 98 € in tutto</dd>
+            <dt>Chi clicca</dt><dd>Arriva sulla guida della casa, fa domande all'assistente e chiede le date al proprietario</dd>
+          </dl></div>
+          <div class="math">
+            <h3>Conviene?</h3>
+            <table>
+              <tr><td>Una prenotazione di 7 notti a 130 €</td><td>910 €</td></tr>
+              <tr><td>Commissione Airbnb su questa prenotazione (15,5% + IVA)</td><td>circa 172 €</td></tr>
+              <tr><td>Costo della campagna</td><td>98 €</td></tr>
+              <tr class="res"><td>Con una sola prenotazione diretta, la campagna costa meno della commissione</td><td>circa 74 € in meno</td></tr>
+            </table>
+            <p class="small">Una campagna non garantisce prenotazioni: si parte con poco, si misura e si continua solo se funziona.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="s5">
+    <div class="wrap">
+      <div class="step-head"><span class="num">5</span><h2 id="s5">Email pronta per i wedding planner</h2><p>Per gli invitati ai matrimoni: un messaggio personale, uno alla volta, senza spam.</p></div>
+      <div class="mail">
+        <div class="mail-head"><span>Oggetto: <strong>Una villa per gli invitati dei vostri matrimoni a Noto</strong></span><button class="btn btn-primary btn-sm" type="button" id="copy-mail">Copia il testo</button></div>
+<pre id="mail-text">Buongiorno [Nome],
+
+sono Giuseppe di Host da Lontano: seguo online alcune case vacanza in provincia di Siracusa. Vi scrivo perché so che a Noto organizzate tanti matrimoni, e spesso gli invitati cercano dove dormire vicino alla festa.
+
+Casa degli Ulivi è una villa per 6 persone a 15 minuti da Noto, con giardino e parcheggio. Se vi può essere utile, vi mando volentieri foto e date libere da girare agli sposi, e per i vostri invitati teniamo un prezzo riservato.
+
+Nessun impegno: se non vi serve, nessun problema.
+
+Un saluto,
+Giuseppe Cona · Host da Lontano
+giuseppe@hostdalontano.com</pre>
+      </div>
+      <p class="small" id="copy-status" role="status" style="margin-top:8px"></p>
+      <div class="actions" style="margin-top:28px">
+        <a class="btn btn-primary" href="../index.html#analisi">Richiedi l'analisi gratuita</a>
+        <a class="btn btn-ghost" href="concierge.html">Guarda il Concierge</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span><strong>Host da Lontano</strong> · Gestione online di case vacanza</span>
+    <nav aria-label="Note legali"><a href="../index.html">Sito principale</a><a href="mailto:giuseppe@hostdalontano.com">giuseppe@hostdalontano.com</a><a href="../impressum.html">Impressum</a><a href="../privacy.html">Privacy</a></nav>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // prenotazioni d'esempio: [nome, anno, mese 0-11, [[inizio, fine]...]]
+  var months = [
+    ["Dicembre",2026,11,[[5,8],[20,31]]],
+    ["Gennaio",2027,0,[[1,3]]],
+    ["Febbraio",2027,1,[[5,9],[20,22]]],
+    ["Marzo",2027,2,[[25,31]]],
+    ["Aprile",2027,3,[[1,5],[10,18],[24,30]]],
+    ["Maggio",2027,4,[[1,3],[13,17],[22,31]]]
+  ];
+  var $ = function(id){ return document.getElementById(id); };
+  function booked(m, d){ return m[3].some(function(r){ return d >= r[0] && d <= r[1]; }); }
+  function isGap(m, d){ return m[0] === "Marzo" && d <= 24; }
+  function len(m){ return new Date(m[1], m[2] + 1, 0).getDate(); }
+  var strip = $("strip"), total = 0, rows = [];
+  months.forEach(function(m, i){
+    var n = len(m), free = 0;
+    var row = document.createElement("button"); row.type = "button"; row.className = "mrow";
+    var name = document.createElement("b"); name.textContent = m[0];
+    var days = document.createElement("span"); days.className = "days"; days.setAttribute("aria-hidden", "true");
+    for (var d = 1; d <= 31; d++){
+      var c = document.createElement("span"); c.className = "d";
+      if (d > n) c.className += " x";
+      else if (booked(m, d)) c.className += " b";
+      else { free++; if (isGap(m, d)) c.className += " gp"; }
+      days.appendChild(c);
+    }
+    var fc = document.createElement("span"); fc.className = "freec"; fc.innerHTML = "<strong>" + free + "</strong> libere";
+    row.setAttribute("aria-label", m[0] + " " + m[1] + ": " + free + " notti libere");
+    row.appendChild(name); row.appendChild(days); row.appendChild(fc);
+    row.addEventListener("click", function(){ show(i); });
+    strip.appendChild(row); rows.push(row); total += free;
+  });
+  $("free-total").textContent = total;
+  function show(i){
+    var m = months[i], n = len(m), week = $("week");
+    rows.forEach(function(r, k){ r.setAttribute("aria-pressed", String(k === i)); });
+    $("m-title").textContent = m[0] + " " + m[1];
+    week.innerHTML = "";
+    ["L","M","M","G","V","S","D"].forEach(function(w){ var e = document.createElement("span"); e.className = "wd"; e.textContent = w; week.appendChild(e); });
+    var off = (new Date(m[1], m[2], 1).getDay() + 6) % 7;
+    for (var k = 0; k < off; k++){ var b = document.createElement("span"); b.className = "day x"; week.appendChild(b); }
+    var free = 0, best = 0, bestStart = 0, run = 0, runStart = 0;
+    for (var d = 1; d <= n; d++){
+      var e = document.createElement("span"), bk = booked(m, d);
+      e.className = "day" + (bk ? " b" : (isGap(m, d) ? " gp" : ""));
+      e.textContent = d; e.title = d + " " + m[0].toLowerCase() + (bk ? ": prenotata" : ": libera");
+      week.appendChild(e);
+      if (!bk){ free++; if (run === 0) runStart = d; run++; if (run > best){ best = run; bestStart = runStart; } } else run = 0;
+    }
+    $("m-free").textContent = free;
+    $("m-long").textContent = best ? best + (best === 1 ? " notte" : " notti") : "–";
+    $("m-range").textContent = best ? "dal " + bestStart + " al " + (bestStart + best - 1) + " " + m[0].toLowerCase() : "nessun periodo libero";
+  }
+  show(3);
+  var btn = $("copy-mail"), st = $("copy-status");
+  btn.addEventListener("click", function(){
+    var pre = $("mail-text");
+    function sel(){ var r = document.createRange(); r.selectNodeContents(pre); var s = getSelection(); s.removeAllRanges(); s.addRange(r); st.textContent = "Testo selezionato: copialo con Ctrl+C o tenendo premuto."; }
+    try { navigator.clipboard.writeText("Oggetto: Una villa per gli invitati dei vostri matrimoni a Noto\n\n" + pre.textContent).then(function(){ st.textContent = "Testo copiato."; }, sel); }
+    catch(e){ sel(); }
+  });
+})();
+</script>
+</body>
+</html>

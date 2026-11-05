@@ -1,0 +1,66 @@
+/* Demo Host da Lontano: stessi colori e caratteri del sito principale (sempre bianco, caratteri di sistema, nessun font esterno). */
+:root{
+  --bg:#FFFFFF; --alt:#F5F7F6; --ink:#101815; --muted:#59645F; --line:#E2E7E4;
+  --shutter:#1F5A44; --shutter-dark:#174534; --brass:#B9862F; --brass-soft:#F6EEDF; --brass-ink:#6E4E14;
+  --bad:#A83E33; --olive:#E8EFE3; --olive-ink:#3D5229;
+  --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth;scroll-padding-top:84px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:1rem;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-weight:700;line-height:1.12;letter-spacing:-.022em;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,5vw,3.2rem);letter-spacing:-.03em}
+h2{font-size:clamp(1.55rem,3vw,2.2rem)}
+h3{font-size:1.15rem;letter-spacing:-.012em}
+p{margin:0}
+a{color:var(--shutter)}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--brass);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:clamp(16px,4vw,40px)}
+.label{font-size:.8125rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--shutter)}
+.lead{color:var(--muted);font-size:1.125rem;max-width:62ch}
+.muted{color:var(--muted)}
+.small{font-size:.875rem;color:var(--muted)}
+section.band{padding-block:clamp(48px,7vw,88px)}
+section.band.alt{background:var(--alt)}
+.stack{display:grid;gap:14px}
+
+/* barra in alto */
+.topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.95);backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.05rem;letter-spacing:-.015em;text-decoration:none;color:var(--ink)}
+.brand svg{width:32px;height:32px;flex:none}
+.brand small{display:block;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.menu{display:flex;align-items:center;gap:22px;font-size:.95rem;font-weight:500}
+.menu a{color:var(--muted);text-decoration:none}
+.menu a:hover,.menu a[aria-current="page"]{color:var(--ink)}
+.menu a[aria-current="page"]{font-weight:700}
+@media (max-width:760px){.menu .hide-sm{display:none}}
+
+/* avviso demo, uno solo per pagina */
+.demo-note{background:var(--brass-soft);color:var(--brass-ink);font-size:.9rem;font-weight:500}
+.demo-note .wrap{padding-block:10px;display:flex;gap:10px;align-items:center}
+.demo-note b{flex:none;font-size:.72rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border:1.5px solid currentColor;border-radius:999px;padding:2px 8px}
+
+/* pulsanti */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:8px;padding:.85em 1.4em;min-height:44px;font-weight:600;font-size:1rem;line-height:1;cursor:pointer;text-decoration:none;transition:background .15s,box-shadow .15s}
+.btn-primary{background:var(--shutter);color:#fff}
+.btn-primary:hover{background:var(--shutter-dark)}
+.btn-ghost{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.btn-ghost:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.btn-sm{padding:.6em 1em;font-size:.92rem;min-height:40px}
+.actions{display:flex;flex-wrap:wrap;gap:12px}
+
+/* piè di pagina come sul sito */
+footer.site{background:var(--ink);color:#C9D1CD;padding-block:32px 40px;font-size:.8125rem}
+footer.site .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px}
+footer.site nav{display:flex;flex-wrap:wrap;gap:10px 20px}
+footer.site a{color:inherit;text-decoration:none}
+footer.site a:hover{color:#fff}
+footer.site strong{color:#fff}
+
+/* telefoni piccoli */
+@media (max-width:480px){.brand small{display:none}.menu{gap:16px}.demo-note{font-size:.84rem}}
