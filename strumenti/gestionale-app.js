@@ -61,6 +61,7 @@ el('loginForm').addEventListener('submit',async event=>{
   await refresh();status('Accesso effettuato. I dati vengono caricati dal database privato.','ok');
  }catch(error){logout('Accesso non riuscito: '+error.message)}finally{b.disabled=false}
 });
+el('testConnection').addEventListener('click',async()=>{const result=el('connectionResult');result.textContent='Controllo connessione in corso…';try{const controller=new AbortController();const timeout=Promise.race([fetch(BASE+'/auth/v1/health',{headers:{apikey:KEY},signal:controller.signal,cache:'no-store'}),new Promise((_,reject)=>setTimeout(()=>{controller.abort();reject(Error('Connessione scaduta'))},9000))]);const response=await timeout;result.textContent=response.ok?'Collegamento Supabase raggiungibile. Ora prova ad accedere.':'Servizio di autenticazione raggiunto, risposta HTTP '+response.status+'.';}catch(err){result.textContent='Non riesco a raggiungere Supabase da questo browser. Verifica la connessione o eventuali blocchi del browser. Dettaglio: '+err.message}});
 el('logout').addEventListener('click',()=>logout());
 async function saveRecord(form,table,idField,payload){
  const id=el(idField).value;
