@@ -36,7 +36,23 @@ function render(){
  el('dueCount').textContent=openLeads.filter(l=>l.next_follow_up&&l.next_follow_up<=today).length;
  const lt=el('leadsRows');lt.replaceChildren();
  const stageName={new:'Nuovo',contacted:'Contattato',analysis_sent:'Analisi inviata',negotiating:'In trattativa',won:'Diventato cliente',lost:'Non interessato'};
- for(const l of leads){const tr=document.createElement('tr');addCell(tr,l.full_name);addCell(tr,l.location||'—');addCell(tr,stageName[l.stage]||l.stage);addCell(tr,l.next_follow_up||'—');addButton(tr,'Modifica',()=>editLead(l));lt.append(tr)}if(!leads.length)empty(lt,5);
+ const filter=el('leadFilter').value;
+ const ordered=[...leads].sort((a,b)=>(a.next_follow_up||'9999-12-31').localeCompare(b.next_follow_up||'9999-12-31'));
+ const selected=ordered.filter(l=>{
+   const closed=['won','lost'].includes(l.stage);
+   return filter==='all'||(filter==='open'&&!closed)||(filter==='closed'&&closed)||(filter==='due'&&!closed&&l.next_follow_up&&l.next_follow_up<=today);
+ });
+ for(const l of selected){
+  const tr=document.createElement('tr');addCell(tr,l.full_name);addCell(tr,l.location||'—');addCell(tr,stageName[l.stage]||l.stage);
+  const dateCell=document.createElement('td');dateCell.textContent=l.next_follow_up||'—';
+  if(l.next_follow_up&&l.next_follow_up<=today&&!['won','lost'].includes(l.stage)){dateCell.style.color='#a23a32';dateCell.style.fontWeight='700'}
+  tr.append(dateCell);
+  addButton(tr,'Modifica',()=>editLead(l));
+  if(l.email)addButton(tr,'Email',()=>prepareDraft(l));
+  else addCell(tr,'');
+  addButton(tr,'→ Cliente',()=>prefillClient(l));
+  lt.append(tr);
+ }if(!selected.length)empty(lt,7);
  el('clientsCount').textContent=clients.length;
  el('propertiesCount').textContent=properties.length;
  el('totalFees').textContent=money(fees.reduce((s,f)=>s+Number(f.fee_amount),0));
@@ -53,6 +69,29 @@ function render(){
  for(const f of fees){const tr=document.createElement('tr');addCell(tr,properties.find(p=>p.id===f.property_id)?.name||'—');addCell(tr,f.period_start+' → '+f.period_end);addCell(tr,money(f.fee_amount));addCell(tr,({'pending':'Da fatturare','invoiced':'Fatturato','paid':'Incassato'})[f.status]||f.status);addButton(tr,'Modifica',()=>editFee(f));ft.append(tr)}if(!fees.length)empty(ft,5);
 }
 function openPanel(id){document.querySelectorAll('[data-panel]').forEach(x=>x.hidden=x.id!==id);document.querySelectorAll('[data-open]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.open===id)));el('editor').scrollIntoView({behavior:'smooth',block:'start'})}
+function prefillClient(l){
+ const match=clients.find(c=>(l.email&&c.email&&c.email.toLowerCase()===l.email.toLowerCase())||c.full_name.trim().toLowerCase()===l.full_name.trim().toLowerCase());
+ if(match){editClient(match);status('Esiste già un cliente con questo nome o email: controlla la sua scheda.','error');return}
+ openPanel('clientPanel');el('clientForm').reset();el('clientId').value='';
+ el('clientName').value=l.full_name;el('clientEmail').value=l.email||'';
+ el('clientStatus').value='active';el('clientNotes').value='Primo contatto registrato nel percorso Potenziali clienti.';
+ el('clientHeading').textContent='Nuovo cliente da '+l.full_name;
+ status('Scheda precompilata. Controlla i dati e premi «Salva cliente». Non è stato ancora salvato nulla.');
+}
+function prepareDraft(l){
+ if(!l.email)return status('Manca l’email del proprietario. Aggiungila nella sua scheda.','error');
+ const isFollowup=['contacted','analysis_sent','negotiating'].includes(l.stage);
+ const subject=isFollowup?'Un aggiornamento sulla tua casa vacanza · Host da Lontano':'La tua casa vacanza · Host da Lontano';
+ const firstName=l.full_name.trim().split(/\s+/)[0]||'';
+ const greeting='Buongiorno '+firstName+',';
+ const common='\\n\\nUn saluto,\\nGiuseppe\\nHost da Lontano\\nhttps://hostdalontano.com';
+ const body=isFollowup
+  ?greeting+'\\n\\nTi scrivo per sapere se hai avuto modo di valutare le informazioni che ci siamo scambiati sulla gestione online della tua casa vacanza.\\n\\nSe hai domande o vuoi approfondire qualche punto, rispondimi pure a questa email.'+common
+  :greeting+'\\n\\ngrazie per l’interesse verso Host da Lontano. Per una prima analisi gratuita della tua casa vacanza, puoi inviarmi il link dell’annuncio (se già online) e indicarmi in quale zona si trova l’immobile.\\n\\nTi risponderò via email con una prima valutazione.'+common;
+ el('draftRecipient').value=l.email;el('draftSubject').value=subject;
+ el('draftBody').value=body.replaceAll('\\n','\n');
+ el('emailPanel').hidden=false;el('emailPanel').scrollIntoView({behavior:'smooth',block:'start'});
+}
 function editLead(l){openPanel('leadPanel');el('leadForm').reset();el('leadId').value=l.id;el('leadName').value=l.full_name;el('leadEmail').value=l.email||'';el('leadLocation').value=l.location||'';el('leadSource').value=l.source;el('leadStage').value=l.stage;el('leadFollowUp').value=l.next_follow_up||'';el('leadLastContact').value=l.last_contact_at||'';el('leadNotes').value=l.notes||'';el('leadHeading').textContent='Modifica contatto'}
 function editClient(c){openPanel('clientPanel');el('clientForm').reset();el('clientId').value=c.id;el('clientName').value=c.full_name;el('clientEmail').value=c.email||'';el('clientPhone').value=c.phone||'';el('clientStatus').value=c.status;el('clientNotes').value=c.notes||'';el('clientHeading').textContent='Modifica cliente'}
 function editProperty(p){openPanel('propertyPanel');el('propertyForm').reset();el('propertyId').value=p.id;el('propertyClient').value=p.client_id;el('propertyName').value=p.name;el('propertyRegion').value=p.region||'';el('propertyStatus').value=p.status;el('propertyLink').value=p.listing_url||'';el('propertyHeading').textContent='Modifica immobile'}
@@ -71,6 +110,19 @@ el('loginForm').addEventListener('submit',async event=>{
  }catch(error){logout('Accesso non riuscito: '+error.message)}finally{b.disabled=false}
 });
 el('testConnection').addEventListener('click',async()=>{const result=el('connectionResult');result.textContent='Controllo connessione in corso…';try{const controller=new AbortController();const timeout=Promise.race([fetch(BASE+'/auth/v1/health',{headers:{apikey:KEY},signal:controller.signal,cache:'no-store'}),new Promise((_,reject)=>setTimeout(()=>{controller.abort();reject(Error('Connessione scaduta'))},9000))]);const response=await timeout;result.textContent=response.ok?'Collegamento Supabase raggiungibile. Ora prova ad accedere.':'Servizio di autenticazione raggiunto, risposta HTTP '+response.status+'.';}catch(err){result.textContent='Non riesco a raggiungere Supabase da questo browser. Verifica la connessione o eventuali blocchi del browser. Dettaglio: '+err.message}});
+el('leadFilter').addEventListener('change',render);
+el('openDraftEmail').addEventListener('click',()=>{
+ const email=el('draftRecipient').value.trim(),sub=el('draftSubject').value.trim(),body=el('draftBody').value;
+ if(!email||!el('draftRecipient').checkValidity()){status('L’indirizzo del destinatario non è valido.','error');return}
+ window.location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body);
+ status('È stata preparata l’email. Ricorda di premere Invia nel programma di posta.');
+});
+el('copyDraftEmail').addEventListener('click',async()=>{
+ const content='A: '+el('draftRecipient').value+'\\nOggetto: '+el('draftSubject').value+'\\n\\n'+el('draftBody').value;
+ try{await navigator.clipboard.writeText(content);status('Bozza copiata.','ok')}
+ catch{el('draftBody').focus();el('draftBody').select();status('Seleziona e copia il testo della bozza.','error')}
+});
+el('closeDraftEmail').addEventListener('click',()=>{el('emailPanel').hidden=true;el('draftBody').value='';});
 el('logout').addEventListener('click',()=>logout());
 async function saveRecord(form,table,idField,payload){
  const id=el(idField).value;
