@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const BASE='https://kgbkevncksvpfgqsvoqg.supabase.co';
 const KEY='sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX';
-let bearer=null,clients=[],properties=[],fees=[];
+let bearer=null,clients=[],properties=[],fees=[],leads=[];
 const el=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(Number(n)||0);
 const status=(msg,type='')=>{el('status').textContent=msg;el('status').dataset.type=type};
@@ -20,15 +20,23 @@ function empty(tbody,columns){const tr=document.createElement('tr'),td=document.
 function option(select,value,label){let o=document.createElement('option');o.value=value;o.textContent=label;select.append(o)}
 function formData(form){return Object.fromEntries(new FormData(form).entries())}
 function setVisible(yes){el('signInBox').hidden=yes;el('adminBox').hidden=!yes}
-function logout(message='Sessione terminata.'){const token=bearer;bearer=null;clients=[];properties=[];fees=[];el('password').value='';setVisible(false);el('loginMessage').textContent=message;if(token)fetch(BASE+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token}}).catch(()=>{})}
+function logout(message='Sessione terminata.'){const token=bearer;bearer=null;clients=[];properties=[];fees=[];leads=[];el('password').value='';setVisible(false);el('loginMessage').textContent=message;if(token)fetch(BASE+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token}}).catch(()=>{})}
 async function refresh(){
- [clients,properties,fees]=await Promise.all([
+ [clients,properties,fees,leads]=await Promise.all([
  call('/rest/v1/hdl_clients?select=id,full_name,email,phone,status,notes,created_at&order=created_at.desc&limit=500'),
  call('/rest/v1/hdl_properties?select=id,client_id,name,region,status,listing_url,created_at&order=created_at.desc&limit=500'),
- call('/rest/v1/hdl_compensi?select=id,property_id,period_start,period_end,payout_owner,cleaning_amount,fee_rate,fee_amount,status,paid_at&order=period_start.desc&limit=1000')]);
+ call('/rest/v1/hdl_compensi?select=id,property_id,period_start,period_end,payout_owner,cleaning_amount,fee_rate,fee_amount,status,paid_at&order=period_start.desc&limit=1000'),
+ call('/rest/v1/hdl_leads?select=id,full_name,email,location,source,stage,next_follow_up,last_contact_at,notes,created_at&order=created_at.desc&limit=500')]);
  render();
 }
 function render(){
+ const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Rome'});
+ const openLeads=leads.filter(l=>!['won','lost'].includes(l.stage));
+ el('leadsCount').textContent=openLeads.length;
+ el('dueCount').textContent=openLeads.filter(l=>l.next_follow_up&&l.next_follow_up<=today).length;
+ const lt=el('leadsRows');lt.replaceChildren();
+ const stageName={new:'Nuovo',contacted:'Contattato',analysis_sent:'Analisi inviata',negotiating:'In trattativa',won:'Diventato cliente',lost:'Non interessato'};
+ for(const l of leads){const tr=document.createElement('tr');addCell(tr,l.full_name);addCell(tr,l.location||'—');addCell(tr,stageName[l.stage]||l.stage);addCell(tr,l.next_follow_up||'—');addButton(tr,'Modifica',()=>editLead(l));lt.append(tr)}if(!leads.length)empty(lt,5);
  el('clientsCount').textContent=clients.length;
  el('propertiesCount').textContent=properties.length;
  el('totalFees').textContent=money(fees.reduce((s,f)=>s+Number(f.fee_amount),0));
@@ -45,10 +53,11 @@ function render(){
  for(const f of fees){const tr=document.createElement('tr');addCell(tr,properties.find(p=>p.id===f.property_id)?.name||'—');addCell(tr,f.period_start+' → '+f.period_end);addCell(tr,money(f.fee_amount));addCell(tr,({'pending':'Da fatturare','invoiced':'Fatturato','paid':'Incassato'})[f.status]||f.status);addButton(tr,'Modifica',()=>editFee(f));ft.append(tr)}if(!fees.length)empty(ft,5);
 }
 function openPanel(id){document.querySelectorAll('[data-panel]').forEach(x=>x.hidden=x.id!==id);document.querySelectorAll('[data-open]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.open===id)));el('editor').scrollIntoView({behavior:'smooth',block:'start'})}
+function editLead(l){openPanel('leadPanel');el('leadForm').reset();el('leadId').value=l.id;el('leadName').value=l.full_name;el('leadEmail').value=l.email||'';el('leadLocation').value=l.location||'';el('leadSource').value=l.source;el('leadStage').value=l.stage;el('leadFollowUp').value=l.next_follow_up||'';el('leadLastContact').value=l.last_contact_at||'';el('leadNotes').value=l.notes||'';el('leadHeading').textContent='Modifica contatto'}
 function editClient(c){openPanel('clientPanel');el('clientForm').reset();el('clientId').value=c.id;el('clientName').value=c.full_name;el('clientEmail').value=c.email||'';el('clientPhone').value=c.phone||'';el('clientStatus').value=c.status;el('clientNotes').value=c.notes||'';el('clientHeading').textContent='Modifica cliente'}
 function editProperty(p){openPanel('propertyPanel');el('propertyForm').reset();el('propertyId').value=p.id;el('propertyClient').value=p.client_id;el('propertyName').value=p.name;el('propertyRegion').value=p.region||'';el('propertyStatus').value=p.status;el('propertyLink').value=p.listing_url||'';el('propertyHeading').textContent='Modifica immobile'}
 function editFee(f){openPanel('feePanel');el('feeForm').reset();el('feeId').value=f.id;el('feeProperty').value=f.property_id;el('start').value=f.period_start;el('end').value=f.period_end;el('payout').value=f.payout_owner;el('cleaning').value=f.cleaning_amount;el('feeRate').value=String(Number(f.fee_rate));el('feeStatus').value=f.status;el('feeHeading').textContent='Modifica compenso'}
-document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.open;openPanel(id);const form=el(id).querySelector('form');form.reset();form.querySelector('input[type=hidden]').value='';el(({clientPanel:'clientHeading',propertyPanel:'propertyHeading',feePanel:'feeHeading'})[id]).textContent=({clientPanel:'Nuovo cliente',propertyPanel:'Nuovo immobile',feePanel:'Nuovo compenso'})[id]}));
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.open;openPanel(id);const form=el(id).querySelector('form');form.reset();form.querySelector('input[type=hidden]').value='';el(({leadPanel:'leadHeading',clientPanel:'clientHeading',propertyPanel:'propertyHeading',feePanel:'feeHeading'})[id]).textContent=({leadPanel:'Nuovo contatto interessato',clientPanel:'Nuovo cliente',propertyPanel:'Nuovo immobile',feePanel:'Nuovo compenso'})[id]}));
 el('loginForm').addEventListener('submit',async event=>{
  event.preventDefault();el('loginMessage').textContent='Verifico l’accesso…';const b=el('loginButton');b.disabled=true;
  try{
@@ -69,6 +78,10 @@ async function saveRecord(form,table,idField,payload){
  form.reset();el(idField).value='';await refresh();status('Dati salvati correttamente.','ok');
 }
 function guard(form,fn){form.addEventListener('submit',async event=>{event.preventDefault();const btn=form.querySelector('[type=submit]');btn.disabled=true;try{await fn()}catch(error){status('Impossibile salvare: '+error.message,'error')}finally{btn.disabled=false}})}
+guard(el('leadForm'),async()=>{
+ const f=formData(el('leadForm'));if(!f.full_name?.trim())throw Error('Inserisci un nome.');
+ await saveRecord(el('leadForm'),'hdl_leads','leadId',{full_name:f.full_name.trim(),email:f.email?.trim()||null,location:f.location?.trim()||null,source:f.source,stage:f.stage,next_follow_up:f.next_follow_up||null,last_contact_at:f.last_contact_at||null,notes:f.notes?.trim()||null});
+});
 guard(el('clientForm'),async()=>{
  const f=formData(el('clientForm'));if(!f.full_name?.trim())throw Error('Inserisci il nome del cliente.');
  await saveRecord(el('clientForm'),'hdl_clients','clientId',{full_name:f.full_name.trim(),email:f.email?.trim()||null,phone:f.phone?.trim()||null,status:f.status,notes:f.notes?.trim()||null});
