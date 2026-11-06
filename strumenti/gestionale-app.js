@@ -113,13 +113,13 @@ el('loginForm').addEventListener('submit',async event=>{
 el('testConnection').addEventListener('click',async()=>{const result=el('connectionResult');result.textContent='Controllo connessione in corso…';try{const controller=new AbortController();const timeout=Promise.race([fetch(BASE+'/auth/v1/health',{headers:{apikey:KEY},signal:controller.signal,cache:'no-store'}),new Promise((_,reject)=>setTimeout(()=>{controller.abort();reject(Error('Connessione scaduta'))},9000))]);const response=await timeout;result.textContent=response.ok?'Collegamento Supabase raggiungibile. Ora prova ad accedere.':'Servizio di autenticazione raggiunto, risposta HTTP '+response.status+'.';}catch(err){result.textContent='Non riesco a raggiungere Supabase da questo browser. Verifica la connessione o eventuali blocchi del browser. Dettaglio: '+err.message}});
 function csvCell(v){
  const raw=String(v??'');
- const safe=/^[\\s]*[=+@-]/.test(raw)?"'"+raw:raw;
+ const safe=/^\s*[=+@-]/.test(raw)?"'"+raw:raw;
  return '"'+safe.replace(/"/g,'""')+'"';
 }
 function exportContacts(){
  if(!leads.length){status('Non ci sono contatti da esportare.','error');return}
  const cols=['full_name','email','location','source','stage','next_follow_up','last_contact_at','notes'];
- const text='\\uFEFF'+[cols.join(';'),...leads.map(l=>cols.map(k=>csvCell(l[k])).join(';'))].join('\\r\\n');
+ const text=String.fromCharCode(0xFEFF)+[cols.join(';'),...leads.map(l=>cols.map(k=>csvCell(l[k])).join(';'))].join(String.fromCharCode(13,10));
  const blob=new Blob([text],{type:'text/csv;charset=utf-8;'});
  const url=URL.createObjectURL(blob);
  const link=document.createElement('a');link.href=url;link.download='host-da-lontano-contatti.csv';
