@@ -430,7 +430,7 @@ footer nav a:hover{color:#fff}
       <div>
         <p class="label">Analisi gratuita</p>
         <h2 style="margin-top:12px">Mandami il tuo annuncio. Ti dico cosa cambierei.</h2>
-        <p class="lead" style="margin-top:16px">Compila il modulo: preparo un'email già pronta da mandarmi. Ti rispondo con l'analisi entro pochi giorni. Ci sentiamo a voce quando avrai deciso di partire, così non facciamo perdere tempo a nessuno dei due.</p>
+        <p class="lead" style="margin-top:16px">Raccontami dove si trova la casa e, se già pubblicato, aggiungi il link dell'annuncio. Ti preparo il testo dell'email da inviarmi: potrò esaminare l'annuncio e risponderti via email con una prima valutazione. Nessun impegno.</p>
         <div class="contact-direct">
           <div><span class="label">Preferisci scrivermi direttamente?</span><a id="mail-text" class="mail-link" href="mailto:giuseppe@hostdalontano.com?subject=Informazioni%20su%20Host%20da%20Lontano">giuseppe@hostdalontano.com</a></div>
           <a class="btn btn-ghost" style="justify-self:start" href="mailto:giuseppe@hostdalontano.com?subject=Informazioni%20su%20Host%20da%20Lontano">Scrivimi un'email</a>
@@ -445,14 +445,18 @@ footer nav a:hover{color:#fff}
         <label for="f-city">Dov'è la casa
           <input id="f-city" name="city" placeholder="Es. Noto (SR)" required>
         </label>
-        <label for="f-link">Link dell'annuncio
+        <label for="f-link">Link dell'annuncio (se la casa è già online)
           <input id="f-link" name="link" type="url" inputmode="url" placeholder="https://www.airbnb.it/rooms/…">
+        </label>
+        <label for="f-email">Email per la risposta (facoltativa)
+          <input id="f-email" name="reply_email" type="email" inputmode="email" autocomplete="email" placeholder="nome@esempio.it">
         </label>
         <label for="f-note">Qualcosa da aggiungere
           <textarea id="f-note" name="note" placeholder="Es. la casa non è ancora online, vivo a Milano…"></textarea>
         </label>
-        <button class="btn btn-primary" type="submit">Prepara il messaggio</button>
-        <p class="status" id="f-status" role="status"></p>
+        <button class="btn btn-primary" type="submit">Prepara l'email per l'analisi</button>
+        <p class="hero-note" style="margin-top:10px">Il modulo non invia nulla automaticamente: controlla il messaggio e premi «Invia» nella tua app email.</p>
+        <p class="status" id="f-status" role="status" aria-live="polite"></p>
         <div class="out" id="out" hidden>
           <span class="label">Il tuo messaggio</span>
           <pre id="out-text"></pre>
@@ -485,22 +489,43 @@ footer nav a:hover{color:#fff}
 
   form.addEventListener("submit", function(e){
     e.preventDefault();
-    var name = form.name.value.trim();
-    var city = form.city.value.trim();
-    var link = form.link.value.trim();
-    var note = form.note.value.trim();
+    // Usa elements.namedItem: form.name è una proprietà nativa del modulo.
+    var nameField = form.elements.namedItem("name");
+    var cityField = form.elements.namedItem("city");
+    var linkField = form.elements.namedItem("link");
+    var noteField = form.elements.namedItem("note");
+    var emailField = form.elements.namedItem("reply_email");
+    var name = nameField.value.trim();
+    var city = cityField.value.trim();
+    var link = linkField.value.trim();
+    var note = noteField.value.trim();
+    var replyEmail = emailField.value.trim();
+    out.hidden = true;
     if(!name || !city){
       status.textContent = "Scrivi almeno il tuo nome e dove si trova la casa.";
-      (name ? form.city : form.name).focus();
+      (name ? cityField : nameField).focus();
       return;
     }
-    var msg = "Ciao Giuseppe, sono " + name + ".\nHo una casa vacanza a " + city + " e vorrei la tua analisi gratuita.";
-    if(link) msg += "\nEcco l'annuncio: " + link;
-    if(note) msg += "\n" + note;
+    if(link && !linkField.checkValidity()){
+      status.textContent = "Controlla il link dell'annuncio oppure lascia vuoto il campo.";
+      linkField.focus();
+      return;
+    }
+    if(replyEmail && !emailField.checkValidity()){
+      status.textContent = "Controlla l'indirizzo email oppure lascia vuoto il campo.";
+      emailField.focus();
+      return;
+    }
+    var msg = "Ciao Giuseppe, sono " + name + ".\nHo una casa vacanza a " + city + " e vorrei richiedere la prima analisi gratuita.";
+    if(link) msg += "\nLink dell'annuncio: " + link;
+    else msg += "\nLa casa non ha ancora un annuncio online oppure preferisco inviarlo successivamente.";
+    if(note) msg += "\nInformazioni aggiuntive: " + note;
+    if(replyEmail) msg += "\nEmail a cui rispondermi: " + replyEmail;
+    msg += "\n\nGrazie!";
     outText.textContent = msg;
     outMail.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("Analisi gratuita: casa a " + city) + "&body=" + encodeURIComponent(msg);
     out.hidden = false;
-    status.textContent = "Email pronta. Se non si apre il tuo programma di posta, copia il testo e mandalo a " + EMAIL + ".";
+    status.textContent = "Email pronta ma non ancora inviata. Premi «Apri l'email», poi inviala dal tuo programma di posta. Se non si apre, copia il testo e mandalo a " + EMAIL + ".";
   });
 
   copyBtn.addEventListener("click", function(){
