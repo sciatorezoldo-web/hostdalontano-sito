@@ -30,8 +30,9 @@ async function refresh(){
  render();
 }
 function render(){
- const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Rome'});
+ const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  const openLeads=leads.filter(l=>!['won','lost'].includes(l.stage));
+ el('emptyGuide').hidden=leads.length>0||clients.length>0||properties.length>0;
  el('leadsCount').textContent=openLeads.length;
  el('dueCount').textContent=openLeads.filter(l=>l.next_follow_up&&l.next_follow_up<=today).length;
  const lt=el('leadsRows');lt.replaceChildren();
@@ -110,6 +111,23 @@ el('loginForm').addEventListener('submit',async event=>{
  }catch(error){logout('Accesso non riuscito: '+error.message)}finally{b.disabled=false}
 });
 el('testConnection').addEventListener('click',async()=>{const result=el('connectionResult');result.textContent='Controllo connessione in corso…';try{const controller=new AbortController();const timeout=Promise.race([fetch(BASE+'/auth/v1/health',{headers:{apikey:KEY},signal:controller.signal,cache:'no-store'}),new Promise((_,reject)=>setTimeout(()=>{controller.abort();reject(Error('Connessione scaduta'))},9000))]);const response=await timeout;result.textContent=response.ok?'Collegamento Supabase raggiungibile. Ora prova ad accedere.':'Servizio di autenticazione raggiunto, risposta HTTP '+response.status+'.';}catch(err){result.textContent='Non riesco a raggiungere Supabase da questo browser. Verifica la connessione o eventuali blocchi del browser. Dettaglio: '+err.message}});
+function csvCell(v){
+ const raw=String(v??'');
+ const safe=/^[\\s]*[=+@-]/.test(raw)?"'"+raw:raw;
+ return '"'+safe.replace(/"/g,'""')+'"';
+}
+function exportContacts(){
+ if(!leads.length){status('Non ci sono contatti da esportare.','error');return}
+ const cols=['full_name','email','location','source','stage','next_follow_up','last_contact_at','notes'];
+ const text='\\uFEFF'+[cols.join(';'),...leads.map(l=>cols.map(k=>csvCell(l[k])).join(';'))].join('\\r\\n');
+ const blob=new Blob([text],{type:'text/csv;charset=utf-8;'});
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement('a');link.href=url;link.download='host-da-lontano-contatti.csv';
+ document.body.append(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+ status('Esportazione dei contatti preparata. Il file contiene dati personali: conservalo in modo sicuro.','ok');
+}
+el('exportLeads').addEventListener('click',exportContacts);
 el('leadFilter').addEventListener('change',render);
 el('openDraftEmail').addEventListener('click',()=>{
  const email=el('draftRecipient').value.trim(),sub=el('draftSubject').value.trim(),body=el('draftBody').value;
