@@ -29,6 +29,75 @@ async function refresh(){
  call('/rest/v1/hdl_leads?select=id,full_name,email,location,source,stage,next_follow_up,last_contact_at,notes,created_at&order=created_at.desc&limit=500')]);
  render();
 }
+function chartNode(tag,cls,textValue){
+ const node=document.createElement(tag);
+ if(cls)node.className=cls;
+ if(textValue!==undefined)node.textContent=String(textValue);
+ return node;
+}
+function renderCharts(){
+ const months=[],now=new Date();
+ for(let n=5;n>=0;n--){
+  const dt=new Date(now.getFullYear(),now.getMonth()-n,1);
+  const code=String(dt.getFullYear())+'-'+String(dt.getMonth()+1).padStart(2,'0');
+  months.push({code,name:new Intl.DateTimeFormat('it-IT',{month:'short'}).format(dt),paid:0,pending:0});
+ }
+ for(const fee of fees){
+  const m=months.find(m=>m.code===String(fee.period_start||'').slice(0,7));
+  if(!m)continue;
+  const value=Number(fee.fee_amount)||0;
+  if(fee.status==='paid')m.paid+=value;
+  else m.pending+=value;
+ }
+ const chart=el('monthlyChart');chart.replaceChildren();
+ const hasFees=months.some(m=>m.paid+m.pending>0);
+ el('monthlyEmpty').hidden=hasFees;
+ chart.hidden=!hasFees;
+ if(hasFees){
+  const max=Math.max(...months.map(m=>m.paid+m.pending),1);
+  const descriptions=[];
+  for(const m of months){
+   const col=chartNode('div','monthColumn');
+   const total=m.paid+m.pending;
+   col.append(chartNode('div','monthValue',total?money(total):'—'));
+   const bars=chartNode('div','monthBars');
+   for(const [value,cls,label] of [[m.paid,'bar','Incassato'],[m.pending,'bar pending','Da incassare']]){
+    const bar=chartNode('div',cls);
+    bar.style.height=value>0?Math.max(3,Math.round(value/max*140))+'px':'0px';
+    bar.title=label+': '+money(value);
+    bars.append(bar);
+   }
+   col.append(bars,chartNode('div','monthLabel',m.name));
+   chart.append(col);
+   descriptions.push(m.name+': incassati '+money(m.paid)+', da incassare '+money(m.pending));
+  }
+  chart.setAttribute('aria-label',descriptions.join('; '));
+ }
+ const stages=[
+ ['new','Nuovi'],['contacted','Contattati'],['analysis_sent','Analisi inviata'],
+ ['negotiating','In trattativa'],['won','Diventati clienti'],['lost','Non interessati']
+ ];
+ const container=el('stageChart');container.replaceChildren();
+ el('stageEmpty').hidden=leads.length>0;
+ container.hidden=leads.length===0;
+ if(leads.length){
+  const max=Math.max(...stages.map(([key])=>leads.filter(l=>l.stage===key).length),1);
+  const descriptions=[];
+  for(const [key,label] of stages){
+   const count=leads.filter(l=>l.stage===key).length;
+   const row=chartNode('div','stageRow');
+   const name=chartNode('span','',label);
+   const track=chartNode('div','stageTrack');
+   const fill=chartNode('div','stageFill');
+   fill.style.width=(count/max*100)+'%';
+   track.append(fill);
+   row.append(name,track,chartNode('strong','',count));
+   container.append(row);
+   descriptions.push(label+': '+count);
+  }
+  container.setAttribute('aria-label',descriptions.join('; '));
+ }
+}
 function render(){
  const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
  const openLeads=leads.filter(l=>!['won','lost'].includes(l.stage));
@@ -58,6 +127,7 @@ function render(){
  el('propertiesCount').textContent=properties.length;
  el('totalFees').textContent=money(fees.reduce((s,f)=>s+Number(f.fee_amount),0));
  el('pendingFees').textContent=money(fees.filter(f=>f.status!=='paid').reduce((s,f)=>s+Number(f.fee_amount),0));
+ renderCharts();
  const owner=el('propertyClient'),prop=el('feeProperty');owner.replaceChildren();prop.replaceChildren();
  option(owner,'','Seleziona un cliente');option(prop,'','Seleziona una proprietà');
  for(const c of clients)option(owner,c.id,c.full_name);
