@@ -131,8 +131,8 @@ el('exportLeads').addEventListener('click',exportContacts);
 el('leadFilter').addEventListener('change',render);
 el('openDraftEmail').addEventListener('click',()=>{
  const email=el('draftRecipient').value.trim(),sub=el('draftSubject').value.trim(),body=el('draftBody').value;
- if(!email||!el('draftRecipient').checkValidity()){status('L’indirizzo del destinatario non è valido.','error');return}
- window.location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body);
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){status('L’indirizzo del destinatario non è valido.','error');return}
+ window.location.href='mailto:'+email+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body);
  status('È stata preparata l’email. Ricorda di premere Invia nel programma di posta.');
 });
 el('copyDraftEmail').addEventListener('click',async()=>{
