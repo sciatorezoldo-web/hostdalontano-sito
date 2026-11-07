@@ -184,9 +184,11 @@ el('propertyPricingPlan').addEventListener('change',togglePropertyContractDate);
 function addMonthsDateString(ymd,months){
  const parts=ymd.split('-').map(Number);
  if(parts.length!==3||parts.some(x=>!Number.isInteger(x)))return null;
- const date=new Date(Date.UTC(parts[0],parts[1]-1+months,parts[2]));
- if(Number.isNaN(date.getTime()))return null;
- return date.toISOString().slice(0,10);
+ const monthStart=new Date(Date.UTC(parts[0],parts[1]-1+months,1));
+ const monthEnd=new Date(Date.UTC(monthStart.getUTCFullYear(),monthStart.getUTCMonth()+1,0)).getUTCDate();
+ monthStart.setUTCDate(Math.min(parts[2],monthEnd));
+ if(Number.isNaN(monthStart.getTime()))return null;
+ return monthStart.toISOString().slice(0,10);
 }
 function effectiveFee(propertyId,start,end){
  const p=properties.find(x=>x.id===propertyId);
