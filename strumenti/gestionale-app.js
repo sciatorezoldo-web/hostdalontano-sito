@@ -11,7 +11,7 @@ async function call(path,{method='GET',body,prefer}={}){
  if(method!=='GET')h.Prefer=prefer||'return=representation';
  const res=await fetch(BASE+path,{method,headers:h,body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'});
  const data=await res.json().catch(()=>null);
- if(!res.ok)throw Error(data?.message||data?.msg||data?.error_description||data?.error||'Errore HTTP '+res.status);
+ if(!res.ok){if(res.status===401&&bearer)throw Error('Sessione scaduta. Esci e accedi nuovamente.');throw Error(data?.message||data?.msg||data?.error_description||data?.error||'Errore HTTP '+res.status)}
  return data;
 }
 function addCell(row,value){const td=document.createElement('td');td.textContent=String(value??'—');row.append(td)}
@@ -211,7 +211,7 @@ el('openDraftEmail').addEventListener('click',()=>{
  status('È stata preparata l’email. Ricorda di premere Invia nel programma di posta.');
 });
 el('copyDraftEmail').addEventListener('click',async()=>{
- const content='A: '+el('draftRecipient').value+'\\nOggetto: '+el('draftSubject').value+'\\n\\n'+el('draftBody').value;
+ const content=['A: '+el('draftRecipient').value,'Oggetto: '+el('draftSubject').value,'',el('draftBody').value].join(String.fromCharCode(10));
  try{await navigator.clipboard.writeText(content);status('Bozza copiata.','ok')}
  catch{el('draftBody').focus();el('draftBody').select();status('Seleziona e copia il testo della bozza.','error')}
 });
@@ -219,7 +219,8 @@ el('closeDraftEmail').addEventListener('click',()=>{el('emailPanel').hidden=true
 el('logout').addEventListener('click',()=>logout());
 async function saveRecord(form,table,idField,payload){
  const id=el(idField).value;
- await call('/rest/v1/'+table+(id?'?id=eq.'+encodeURIComponent(id):''),{method:id?'PATCH':'POST',body:payload});
+ const saved=await call('/rest/v1/'+table+(id?'?id=eq.'+encodeURIComponent(id):''),{method:id?'PATCH':'POST',body:payload});
+ if(!Array.isArray(saved)||saved.length!==1)throw Error('Il database non ha confermato il salvataggio. Aggiorna i dati e riprova.');
  form.reset();el(idField).value='';await refresh();status('Dati salvati correttamente.','ok');
 }
 function guard(form,fn){form.addEventListener('submit',async event=>{event.preventDefault();const btn=form.querySelector('[type=submit]');btn.disabled=true;try{await fn()}catch(error){status('Impossibile salvare: '+error.message,'error')}finally{btn.disabled=false}})}
@@ -246,6 +247,7 @@ guard(el('feeForm'),async()=>{
 function localDate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function nextDates(){const d=new Date();d.setHours(12,0,0,0);return Array.from({length:28},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return x})}
 function loadPropertyTools(){
+ el('guidePreview').hidden=true;
  const propertyId=el('toolsProperty').value;
  const form=el('toolsForm');form.hidden=!propertyId;
  if(!propertyId){el('toolsRadarSummary').textContent='Seleziona prima un immobile.';return}
@@ -262,6 +264,26 @@ function loadPropertyTools(){
  selectedOccupied=new Set(t.occupied_dates||[]);
  renderPrivateCalendar();
 }
+function previewGuestGuide(){
+ const id=el('toolsProperty').value,p=properties.find(p=>p.id===id);
+ if(!p){status('Seleziona prima un immobile.','error');return}
+ const fields=[
+ ['previewTitle',p.name],['previewArea',p.region||''],
+ ['previewIn',el('toolCheckin').value||'Da confermare'],
+ ['previewOut',el('toolCheckout').value||'Da confermare'],
+ ['previewParking',el('toolParking').value.trim()||'Da comunicare'],
+ ['previewWifi',el('toolWifi').value.trim()||'Da comunicare'],
+ ['previewRules',el('toolRules').value.trim()||'Da comunicare'],
+ ['previewWaste',el('toolWaste').value.trim()||'Da comunicare'],
+ ['previewHelp',el('toolHelp').value.trim()||'Da comunicare']
+ ];
+ for(const [id,value] of fields)el(id).textContent=value;
+ el('guidePreview').hidden=false;
+ el('guidePreview').scrollIntoView({behavior:'smooth',block:'start'});
+}
+el('previewGuide').addEventListener('click',previewGuestGuide);
+el('closeGuidePreview').addEventListener('click',()=>el('guidePreview').hidden=true);
+
 function renderPrivateCalendar(){
  const calendar=el('toolsCalendar');calendar.replaceChildren();
  const dates=nextDates();const labelFormat=new Intl.DateTimeFormat('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
@@ -298,7 +320,8 @@ el('toolsForm').addEventListener('submit',async event=>{
  };
  btn.disabled=true;
  try{
-  await call('/rest/v1/hdl_property_tools?on_conflict=property_id',{method:'POST',body:payload,prefer:'resolution=merge-duplicates,return=representation'});
+  const saved=await call('/rest/v1/hdl_property_tools?on_conflict=property_id',{method:'POST',body:payload,prefer:'resolution=merge-duplicates,return=representation'});
+  if(!Array.isArray(saved)||saved.length!==1)throw Error('Il database non ha confermato le impostazioni.');
   await refresh();el('toolsProperty').value=id;loadPropertyTools();status('Concierge e Radar salvati per questo immobile.','ok');
  }catch(error){status('Errore salvataggio strumenti: '+error.message,'error')}
  finally{btn.disabled=false}
