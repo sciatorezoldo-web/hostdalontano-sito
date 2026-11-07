@@ -25,7 +25,7 @@ a{color:#245c40}a:focus-visible{outline:3px solid #b9862f;outline-offset:2px}
 <div class="eyebrow">Piano di sviluppo · Host da Lontano</div>
 <h1>Claude personale + Claude nei nostri strumenti</h1>
 <p class="lead">Un solo metodo operativo, due modalità: userai Claude in chat per imparare e lavorare, mentre nel gestionale avrai funzioni IA dedicate a Concierge e Radar. Le risposte dell'IA saranno proposte da verificare, non azioni automatiche.</p>
-<div class="note"><strong>Stato del progetto:</strong> questa è la pianificazione. Oggi Concierge conserva e condivide una guida; Radar mostra un calendario e simulazioni manuali. <strong>Claude non è ancora integrato</strong> e non esiste una chiamata API attiva. Non sono stati creati clienti fittizi né abilitati costi API.</div>
+<div class="note"><strong>Stato aggiornato:</strong> i pulsanti Claude sono stati aggiunti al gestionale e la funzione server <code>hdl-claude-assistant</code> è stata distribuita su Supabase. La connessione ad Anthropic resta <strong>disabilitata</strong> finché non configuri i Secrets <code>ANTHROPIC_API_KEY</code> e <code>HDL_AI_ENABLED=true</code>. Sono predisposti controlli di accesso per amministratori e una quota massima di 12 richieste per amministratore al giorno (UTC). Non sono stati creati immobili fittizi né effettuate chiamate Claude a pagamento.</div>
 
 <section class="card">
 <h2>Fase A — Preparare il tuo Claude personale <span class="pill">Puoi iniziare subito</span></h2>
@@ -100,6 +100,19 @@ Regole:
 </ul></div>
 </div>
 <div class="note ready"><strong>Spese:</strong> Claude in chat e Claude API sono prodotti diversi. I costi API dipendono da modello, token e numero di richieste. Prima di usare dati reali, impostare un budget iniziale piccolo e controlli interni di utilizzo. Le funzioni non devono andare in produzione attiva finché questi controlli non sono verificati.</div>
+</section>
+
+<section class="card">
+<h2>Attivazione tecnica · Solo quando lo deciderai tu</h2>
+<ol>
+<li>In <a href="https://platform.claude.com/" rel="noopener noreferrer">Claude Console</a> verifica di avere accesso API e un metodo di pagamento/budget adeguato. L'abbonamento alla chat Claude o a Claude Code non dà automaticamente credito API al sito.</li>
+<li>Apri la dashboard Supabase del progetto <strong>Host da Lontano Gestionale</strong> → Edge Functions → Secrets. Imposta <code>ANTHROPIC_API_KEY</code> con la tua chiave Anthropic. <strong>Non inserirla su GitHub, nel codice HTML o in chat.</strong></li>
+<li>Imposta <code>HDL_AI_ENABLED</code> al valore <code>true</code> soltanto dopo il collaudo di accessi, limiti e privacy. Finché è assente o diverso da <code>true</code>, ogni richiesta rientra con «Claude non ancora attivo», senza chiamare Anthropic.</li>
+<li>L'eventuale secret <code>HDL_CLAUDE_MODEL</code> serve a cambiare il modello. Quello previsto inizialmente è <code>claude-haiku-4-5-20251001</code>; controlla disponibilità e prezzi in Claude Console prima dell'attivazione.</li>
+<li>Il codice della Edge Function è versionato in <code>supabase/functions/hdl-claude-assistant/index.ts</code> sul repository GitHub. Puoi aprirlo con Claude Code, ma ricorda che <strong>modificare GitHub non ridistribuisce automaticamente la Edge Function</strong> su Supabase: occorre una distribuzione separata.</li>
+<li>Prova con un tuo immobile reale solo dopo averne registrato correttamente i dati e verificato tutte le autorizzazioni. Non creare clienti di fantasia nel database reale.</li>
+</ol>
+<div class="note"><strong>Collaudo ancora necessario:</strong> il controllo statico del codice, le autorizzazioni SQL e la distribuzione sono stati verificati, ma non è stata effettuata una richiesta completa di Claude con account amministratore e dati di un immobile reale. L'attivazione API richiede una tua decisione esplicita e ulteriori prove.</div>
 </section>
 
 <section class="card">
