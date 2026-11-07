@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="it"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<title>Manuale operativo · Host da Lontano</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#182d22;background:#f5f8f6;line-height:1.6;color-scheme:light}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0}
+header{background:white;border-bottom:1px solid #dbe4dc;padding:17px max(16px,calc((100vw - 1060px)/2));display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+a{color:#255c41}header a{text-decoration:none;font-weight:750}main{max-width:1060px;margin:auto;padding:34px 18px 65px}
+h1{font-size:clamp(30px,4.5vw,45px);line-height:1.15;margin:10px 0}h2{font-size:24px;margin:0 0 15px}h3{font-size:18px;margin:18px 0 8px}
+small,.muted{color:#637568}.eyebrow{color:#997233;text-transform:uppercase;font-weight:800;font-size:12px;letter-spacing:.12em}
+.lead{font-size:1.1rem;color:#516759;max-width:74ch}.toc{display:flex;flex-wrap:wrap;gap:8px;margin:26px 0}
+.toc a{border:1px solid #cadbcc;background:white;padding:8px 12px;text-decoration:none;border-radius:8px;font-size:14px}
+section{margin-top:26px;background:white;padding:27px;border:1px solid #dce6de;border-radius:14px}
+section[id]{scroll-margin-top:20px}
+ul,ol{padding-left:21px}li{margin-bottom:9px}li ul{margin-top:7px}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;border-bottom:1px solid #e4ebe5;padding:11px 9px;vertical-align:top}th{background:#f4f8f5}
+.note{padding:15px 17px;border-left:4px solid #aa813e;background:#faf7ef;border-radius:0 8px 8px 0;margin:18px 0}
+.good{border-left-color:#2c6650;background:#f1f8f2}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.mini{border:1px solid #dae6dc;border-radius:10px;padding:16px;background:#fbfdfb}
+a:focus-visible{outline:3px solid #b9862f;outline-offset:2px}
+@media(max-width:650px){main{padding:24px 12px 45px}section{padding:18px}.cards{grid-template-columns:1fr}table{display:block;overflow-x:auto}h2{font-size:21px}}
+@media print{body{background:white}header,.toc{display:none}section{break-inside:avoid;border:0;border-top:1px solid #ddd;border-radius:0;margin:10px 0;padding:15px 0}main{max-width:none}}
+</style></head>
+<body>
+<header><a href="accesso.html">← Gestionale Host da Lontano</a><a href="accordo-bozza.html">Bozza di accordo commerciale</a></header>
+<main>
+<div class="eyebrow">Manuale interno · revisione 1</div>
+<h1>Come lavorare davvero, passo dopo passo</h1>
+<p class="lead">Questa guida descrive il metodo operativo per la gestione online di case vacanza, come usare gli strumenti già realizzati e cosa devi ancora svolgere manualmente. È un percorso di lavoro, non una promessa di automazione o una consulenza legale.</p>
+<div class="note"><strong>Stato attuale:</strong> non sono ancora stati registrati clienti o immobili reali. Il gestionale è pronto per i primi dati ma va collaudato in una situazione reale. Il sito pubblico mostra una demo separata. Non inserire mai dati fittizi nel database operativo.</div>
+<nav class="toc" aria-label="Indice manuale">
+<a href="#perimetro">01 · Perimetro</a><a href="#cliente">02 · Primo contatto</a><a href="#analisi">03 · Analisi gratuita</a><a href="#accordo">04 · Accordo</a><a href="#avvio">05 · Avvio immobile</a><a href="#quotidiano">06 · Operatività</a><a href="#strumenti">07 · Strumenti</a><a href="#compensi">08 · Compensi</a><a href="#problemi">09 · Problemi</a><a href="#checklist">10 · Checklist</a>
+</nav>
+
+<section id="perimetro"><h2>01. Chi fa cosa: il perimetro del servizio</h2>
+<div class="cards">
+<div class="mini"><h3>Tu: Host da Lontano</h3><ul>
+<li>Analisi degli annunci e proposta di miglioramento.</li>
+<li>Testi, titoli, ordinamento foto esistenti, suggerimenti per nuovi scatti.</li>
+<li>Strategia dei prezzi e disponibilità nei canali concordati, con approvazioni previste dall'accordo.</li>
+<li>Messaggi online agli ospiti nei canali e negli orari concordati; gestione delle recensioni.</li>
+<li>Controllo manuale del calendario e report periodico al proprietario.</li>
+<li>Preparazione della guida Concierge e uso del Radar come strumenti di supporto.</li>
+</ul></div>
+<div class="mini"><h3>Proprietario o referente locale</h3><ul>
+<li>Pulizia, biancheria, chiavi, accesso fisico e manutenzioni.</li>
+<li>Intervento fisico in caso di guasti, emergenze e situazioni sul posto.</li>
+<li>Autorizzazioni, documenti, adempimenti e verifiche pertinenti alla struttura, da assegnare espressamente.</li>
+<li>Account, incassi e approvazione di condizioni commerciali importanti.</li>
+<li>Verifica dei servizi e della conformità dell'immobile.</li>
+</ul></div></div>
+<div class="note">Non usare «gestisco tutto» senza specificare «online». Non promettere disponibilità 24/7, risultati di occupazione, funzioni automatiche dei portali o assistenza sul posto se non hai davvero risorse e accordi per garantirli.</div>
+</section>
+
+<section id="cliente"><h2>02. Dal primo messaggio a un contatto qualificato</h2>
+<ol>
+<li>Il proprietario raggiunge <strong>hostdalontano.com</strong>, apre «Analisi gratuita» e prepara una email sul proprio dispositivo. <strong>Il sito non invia email automaticamente</strong>: deve premere Invia nella propria app.</li>
+<li>Ricevi l'email nella casella del servizio. Verifica nome, località, link dell'annuncio e un indirizzo a cui rispondere. Se manca qualcosa, richiedilo via email; non chiedere password.</li>
+<li>Apri <a href="accesso.html">Gestionale → + Contatto</a>. Registra nome, email, zona, origine «sito» o «email» e fase «Nuovo».</li>
+<li>Imposta «Da ricontattare il» e annota la prossima azione. Evita di copiare nell'archivio dati personali non necessari.</li>
+<li>La colonna «Email» prepara una bozza; l'invio <strong>non è automatico</strong>. Rileggi il testo e invia dal programma di posta.</li>
+<li>Aggiorna la fase del contatto: Contattato → Analisi inviata → In trattativa → Diventato cliente oppure Non interessato.</li>
+</ol>
+<p class="muted">I ricontatti sono mostrati nel cruscotto, ma non partono notifiche e non vengono inviate email programmate.</p></section>
+
+<section id="analisi"><h2>03. Come preparare un'analisi gratuita utile</h2>
+<ol>
+<li><strong>Esamina il link</strong> solo se accessibile: titolo, prima foto, completezza delle immagini, descrizione, dotazioni, regole, prezzi pubblici, disponibilità mostrata e recensioni.</li>
+<li><strong>Separa fatti e ipotesi.</strong> «La prima foto mostra il corridoio» è osservabile; «cambiare foto farà salire i ricavi» non è dimostrato senza dati.</li>
+<li>Scrivi una sintesi breve: 3 aspetti validi, 3 criticità, 3 azioni prioritarie, informazioni mancanti e limiti dell'analisi.</li>
+<li>Indica quali dati servirebbero per una valutazione numerica: incassi, prezzi medi, notti occupate, cancellazioni e commissioni dei portali. Non inventarli.</li>
+<li>Spedisci una risposta chiara via email con invito facoltativo ad approfondire; poi imposta «Analisi inviata» e una data di ricontatto.</li>
+</ol>
+<div class="note good"><strong>Struttura consigliata del messaggio:</strong> situazione attuale → opportunità concrete → interventi in ordine di priorità → prossima domanda. Evita promesse di percentuali di crescita.</div>
+</section>
+
+<section id="accordo"><h2>04. Prima di accettare un immobile</h2>
+<ol>
+<li>Verifica che il proprietario sia autorizzato ad affidare la gestione online e possa documentare la situazione dell'immobile.</li>
+<li>Concorda <strong>cosa farai</strong>, quali portali userai, chi approva prezzi, sconti, rimborsi e modifiche.</li>
+<li>Nomina un referente locale effettivamente reperibile e definisci i casi di intervento urgente.</li>
+<li>Individua il piano economico: <strong>18%</strong> ordinario; <strong>15% nei primi 3 mesi</strong> dalla data concordata e poi 18%; oppure <strong>20%</strong> se concordato espressamente per un incarico più impegnativo.</li>
+<li>Definisci la base di calcolo, esclusioni (es. pulizie), imposte applicabili, rendicontazione, fatturazione, termini di pagamento, recesso e trattamento dati.</li>
+<li>Fai controllare il testo contrattuale e il tuo inquadramento fiscale/professionale prima della firma, specialmente se l'attività è gestita dalla Germania per immobili in Italia.</li>
+</ol>
+<p><a href="accordo-bozza.html">Apri la bozza di accordo da revisionare</a> — non è ancora pronta per la firma.</p>
+</section>
+
+<section id="avvio"><h2>05. Onboarding: dalla firma alla prima prenotazione</h2>
+<ol>
+<li>Archivia il contratto approvato in un sistema riservato; non inserire documenti o password nei campi pubblici del sito.</li>
+<li>Registra il proprietario come <strong>Cliente</strong>, dopo avere verificato che non sia già presente. Il pulsante «→ Cliente» dal contatto prepara la scheda, ma non la salva da solo.</li>
+<li>Crea l'<strong>Immobile</strong>, associato al cliente. Imposta stato «In preparazione», zona, link annuncio, piano tariffario e data di inizio per la promozione.</li>
+<li>Controlla la completezza dell'annuncio, le regole, la persona di riferimento locale e la situazione degli adempimenti pertinenti; documenta le approvazioni del proprietario.</li>
+<li>Accedi ai portali solo tramite deleghe autorizzate e permessi strettamente necessari. Non richiedere password in email.</li>
+<li>Allinea e verifica i calendari direttamente sui portali o sistemi esterni autorizzati; il Radar interno <strong>non effettua sincronizzazione</strong>.</li>
+<li>Configura il Concierge privato per la proprietà, controlla le informazioni e salva. Crea il link ospiti <em>disattivato</em>, rileggi il testo, poi decidi se attivarlo.</li>
+<li>Prima di passare l'immobile a «Attivo», verifica un intero percorso: annuncio → richiesta → risposta → prenotazione → arrivo → assistenza → recensione.</li>
+</ol></section>
+
+<section id="quotidiano"><h2>06. Lavoro operativo: ogni giorno, settimana, mese</h2>
+<div class="cards">
+<div class="mini"><h3>Ogni giorno (controllo manuale)</h3><ul>
+<li>Apri messaggi e richieste nei portali concordati; rispondi entro gli orari pattuiti.</li>
+<li>Controlla arrivi, partenze, cancellazioni, modifiche e eventuali richieste urgenti.</li>
+<li>Verifica disponibilità e anomalie direttamente nei canali reali, non solo nel Radar.</li>
+<li>Se manca una risposta da proprietario o referente locale, registra la richiesta e sollecita via email.</li>
+</ul></div>
+<div class="mini"><h3>Ogni settimana</h3><ul>
+<li>Rivedi prezzi, minimi di soggiorno e disponibilità dove sei autorizzato.</li>
+<li>Controlla annunci, contenuti e recensioni nuove.</li>
+<li>Verifica i contatti ancora aperti nel gestionale e le date di follow-up.</li>
+<li>Aggiorna il Radar manualmente solo quando hai dati attendibili dal calendario reale.</li>
+</ul></div>
+<div class="mini"><h3>Ogni mese</h3><ul>
+<li>Chiedi o scarica rendiconti dai portali, verifica incassi del proprietario e pulizie.</li>
+<li>Inserisci un <strong>Compenso</strong> per immobile e periodo, con stato «Da fatturare».</li>
+<li>Controlla la commissione automatica; se scatta un cambio tariffa nel periodo, dividilo in due.</li>
+<li>Invia report al proprietario via email; gestisci la fatturazione con lo strumento fiscale effettivo.</li>
+<li>Segna «Fatturato» o «Incassato» nel gestionale solo dopo la relativa verifica.</li>
+</ul></div>
+<div class="mini"><h3>Prima di ogni stagione</h3><ul>
+<li>Rivedi prezzi, calendario festività, eventi e restrizioni di soggiorno.</li>
+<li>Controlla la guida ospiti per orari, parcheggio, rifiuti e referenti.</li>
+<li>Verifica con il proprietario che i dati di sicurezza e documentazione siano ancora corretti.</li>
+<li>Conferma che l'accordo e la reperibilità concordata siano ancora adeguati.</li>
+</ul></div>
+</div>
+</section>
+
+<section id="strumenti"><h2>07. Guida pratica a ciascuno strumento</h2>
+<table><thead><tr><th>Strumento</th><th>Che cosa fa realmente</th><th>Che cosa NON fa</th></tr></thead><tbody>
+<tr><td><strong>Sito pubblico</strong></td><td>Presenta il servizio e prepara l'email di analisi gratuita.</td><td>Non spedisce automaticamente email e non crea lead nel database.</td></tr>
+<tr><td><strong>Potenziali clienti</strong></td><td>Memorizza contatti, fasi, follow-up, preparazione bozze email ed export CSV.</td><td>Non invia follow-up, non acquisisce automaticamente i form e non fa campagne.</td></tr>
+<tr><td><strong>Clienti / Immobili</strong></td><td>Memorizza schede, associa immobili a proprietari e conserva il piano economico.</td><td>Non effettua verifiche legali o sincronizzazioni con portali.</td></tr>
+<tr><td><strong>Concierge privato</strong></td><td>Memorizza per immobile orari, parcheggio, nome Wi-Fi, regole, rifiuti e assistenza.</td><td>Non contiene password, non è un sistema di check-in o di accesso fisico.</td></tr>
+<tr><td><strong>Guida ospiti tramite link</strong></td><td>Mostra solo i campi della guida se attivata da te; puoi revocare o sostituire il link.</td><td>Non autentica ogni ospite individualmente: chi possiede un link attivo può leggerla.</td></tr>
+<tr><td><strong>Radar</strong></td><td>Calendario manuale dei prossimi 28 giorni e simulazione basata su tariffa e quota ipotetica di vendite.</td><td>Non legge dati reali Airbnb/Booking, non aggiorna i portali e non garantisce ricavi.</td></tr>
+<tr><td><strong>Compensi</strong></td><td>Calcola 18% / 15% promozionale / 20% sul valore registrato dopo le pulizie e mantiene stati.</td><td>Non emette fatture, non verifica bonifici e non acquisisce i rendiconti dei portali.</td></tr>
+<tr><td><strong>Grafici</strong></td><td>Riepilogano dati registrati: compensi per mese del periodo e contatti per fase.</td><td>Non sono contabilità certificata né statistiche importate da piattaforme.</td></tr>
+</tbody></table>
+<h3>Concierge: sequenza corretta</h3>
+<ol><li>Apri il gestionale, seleziona «Apri strumenti» e scegli l'immobile.</li><li>Compila i dati e salva Concierge e Radar.</li><li>Usa «Anteprima guida ospiti» e rileggi ogni frase.</li><li>Se vuoi condividere, premi «Crea link disattivato»; verifica assenza di informazioni private.</li><li>Premi «Attiva guida». Il link può essere copiato e inviato dal tuo programma di posta.</li><li>Se un link è stato condiviso per errore, disattiva la guida o sostituisci il token.</li></ol>
+<h3>Radar: interpretare il numero correttamente</h3>
+<p>La formula dimostrativa è: <strong>notti libere × tariffa ipotizzata × percentuale ipotizzata di notti vendibili</strong>. Esempio illustrativo: 20 notti × 130 € × 25% = 650 € di ricavo lordo <em>teorico</em>. Non considera stagionalità, commissioni, tasse, sconti, cancellazioni o domanda reale. Non usare la cifra come previsione garantita.</p>
+</section>
+
+<section id="compensi"><h2>08. Calcolare e registrare il compenso senza errori</h2>
+<ol>
+<li>Ottieni il rendiconto verificabile del portale: importo <strong>riconosciuto al proprietario</strong> e quota pulizie compresa in quell'importo.</li>
+<li>Registra un periodo coerente con l'accordo e gli importi. Non usare la tariffa di listino dell'annuncio come incasso effettivo.</li>
+<li>Il gestionale applica il piano scelto nell'immobile: 18% standard; 15% nei primi tre mesi dalla data di avvio concordata, poi 18%; 20% per piano speciale.</li>
+<li>Se il periodo copre la data di passaggio dal 15% al 18%, <strong>separa gli importi</strong> prima e dopo tale data: il sistema non ripartisce un unico importo aggregato.</li>
+<li>Controlla compenso, periodo e stato. I valori salvati sono dati amministrativi manuali; la fattura vera va emessa nel sistema fiscale utilizzato.</li>
+</ol>
+<div class="note good"><strong>Esempio didattico:</strong> pagamento al proprietario 1.100 €, di cui 100 € per pulizie → base 1.000 €; 15% = 150 €, 18% = 180 €, 20% = 200 €. L'eventuale IVA del servizio dipende dal regime fiscale e dall'inquadramento effettivo.</div>
+</section>
+
+<section id="problemi"><h2>09. Problemi, incidenti e limiti</h2>
+<ul>
+<li><strong>Ospite senza accesso:</strong> verifica la prenotazione nei canali consentiti e avvisa il referente locale. Non pubblicare PIN in una guida accessibile tramite link.</li>
+<li><strong>Guasto o emergenza fisica:</strong> indirizza al referente e ai numeri di emergenza pertinenti; la tua attività è online, non di pronto intervento.</li>
+<li><strong>Overbooking o calendario incoerente:</strong> blocca modifiche manuali affrettate, controlla le fonti ufficiali e coordina il proprietario. Il Radar non risolve sovrapposizioni.</li>
+<li><strong>Dati personali o email errata:</strong> usa solo strumenti e destinatari autorizzati, riduci al minimo la diffusione e documenta la correzione.</li>
+<li><strong>Problema di accesso al gestionale:</strong> verifica autenticazione e connessione; non inviare password via chat o email. L'accesso ai dati resta regolato da Supabase e RLS.</li>
+<li><strong>Recesso o fine incarico:</strong> revoca deleghe, disattiva eventuali link ospiti e segui le procedure concordate di restituzione/cancellazione dei dati.</li>
+</ul>
+<p class="muted">Normativa, obblighi del CIN, sicurezza, comunicazioni degli alloggiati e rapporti privacy devono essere verificati per singolo immobile e caso. Fonti ufficiali: <a href="https://www.ministeroturismo.gov.it/faq-banca-dati-strutture-ricettive-bdsr/" rel="noopener noreferrer">FAQ BDSR Ministero del Turismo</a> e <a href="https://eur-lex.europa.eu/eli/reg/2016/679/oj" rel="noopener noreferrer">Regolamento UE 2016/679</a>.</p>
+</section>
+
+<section id="checklist"><h2>10. La tua prima checklist di apprendimento</h2>
+<ol>
+<li>Spiega in una frase il servizio: «Gestisco la presenza e l'operatività online della casa; il proprietario e il referente locale gestiscono gli interventi fisici».</li>
+<li>Ripeti il percorso <strong>Email → Contatto → Analisi → Accordo → Cliente → Immobile</strong>.</li>
+<li>Confronta la demo pubblica con i dati riservati per immobile.</li>
+<li>Spiega perché il Radar non è una prenotazione reale.</li>
+<li>Descrivi quando è sicuro attivare una guida e come revocarla.</li>
+<li>Calcola a mano un compenso del 15%, 18% e 20% su una base netta di pulizie.</li>
+<li>Verifica un periodo che attraversa la fine dei 3 mesi promozionali.</li>
+<li>Prepara un'analisi d'annuncio a partire da un esempio pubblico senza inventare ricavi.</li>
+<li>Studia con un consulente il regime fiscale e il perimetro degli obblighi prima del primo contratto.</li>
+</ol>
+<div class="note"><strong>Passo successivo:</strong> esercitarsi con simulazioni <em>fuori dal database reale</em>, una funzione alla volta. Non usare gli strumenti pubblici o il gestionale per memorizzare documenti di identità, password degli ospiti o codici di accesso.</div>
+</section>
+<p class="muted" style="margin-top:25px">Manuale di apprendimento: il contenuto HTML non contiene dati privati. Il collegamento dal gestionale compare dopo il login, ma questa pagina statica non è protetta da autenticazione: non inserire qui segreti o dati dei clienti.</p>
+</main></body></html>
