@@ -28,33 +28,56 @@ mark{background:var(--mark);color:inherit;padding:0 3px;border-radius:3px}
 <body>
 <main>
   <a class="back" href="index.html">← Host da Lontano</a>
-  <h1>Datenschutzerklärung</h1>
-  <p class="muted">Informativa sulla privacy. Il testo è in tedesco perché vivo e lavoro in Germania.</p>
+  <h1>Datenschutz / Informativa privacy</h1>
+  <p class="muted">Stand / Aggiornamento: 07.11.2026. Informationen zur Website, zum internen Verwaltungsbereich und zu digitalen Gästeführern. Informazioni sul sito, sul gestionale riservato e sulle guide ospiti.</p>
+  <p><a href="#de">Deutsch</a> · <a href="#it">Italiano</a></p>
+  <section id="de" lang="de">
+  <h2>1. Verantwortlicher und Kontakt</h2>
+  <p>Giuseppe Cona · Host da Lontano · Ansbach, Deutschland. E-Mail: <a href="mailto:giuseppe@hostdalontano.com">giuseppe@hostdalontano.com</a>. Die vollständige ladungsfähige Geschäftsanschrift muss im <a href="impressum.html">Impressum</a> ergänzt werden. Die genaue Unternehmens- und Steuersituation ist noch zu bestätigen.</p>
+  <h2>2. Aufruf der öffentlichen Website</h2>
+  <p>Die öffentliche Website wird über GitHub Pages bereitgestellt. Dabei können GitHub und beteiligte Infrastrukturprovider technisch notwendige Zugriffsdaten (etwa IP-Adresse, Abrufzeit, abgerufene Seite, Browserinformationen) verarbeiten, um die Website auszuliefern, zu schützen und Fehler zu beheben. Rechtsgrundlage auf Seiten des Websitebetreibers: Art. 6 Abs. 1 lit. f DSGVO (sicherer und funktionsfähiger Betrieb). Für eigene Verarbeitungen der Provider gelten deren Informationen.</p>
+  <h2>3. E-Mail-Kontakt und kostenlose Erstanalysen</h2>
+  <p>Das öffentliche Anfrageformular übermittelt keine Daten an unseren Webserver: Es erstellt lediglich einen E-Mail-Entwurf auf Ihrem Gerät. Erst wenn Sie die E-Mail selbst absenden, werden Name, E-Mail-Adresse, Lage der Unterkunft, Inseratslink und freiwillige Angaben verarbeitet. Zwecke: Beantwortung der Anfrage, Vorbereitung eines möglichen Vertrages und – bei späterer Zusammenarbeit – Kundenbetreuung. Rechtsgrundlagen: Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche oder vertragliche Maßnahmen), gegebenenfalls lit. f (ordnungsgemäße Bearbeitung geschäftlicher Kontakte) und lit. c (gesetzliche Pflichten). E-Mails werden über Google Workspace verarbeitet. Bitte senden Sie keine Ausweisdokumente, Türcodes oder Passwörter.</p>
+  <h2>4. Interner Verwaltungsbereich und Datenbank</h2>
+  <p>Der passwortgeschützte Verwaltungsbereich nutzt Supabase für Benutzeranmeldung und die Speicherung von Interessenten, Eigentümerkontakten, Objekten, vertraglich vereinbarten Konditionen, Abrechnungsübersichten und manuellen Informationen für Concierge und Radar. Die im Projekt gewählte Datenbankregion liegt in der EU (Deutschland). Der Zugang zu diesen Tabellen ist auf zugelassene Administratoren über Datenbankzugriffsregeln beschränkt. Die öffentliche Demonstration verwendet fiktive Werte und speichert keine echten Buchungen.</p>
+  <p>Im Verwaltungsbereich sind die Authentifizierung und ein kurzlebiges Zugriffsmerkmal technisch erforderlich. Der Anmeldetoken wird derzeit nur im Arbeitsspeicher des geöffneten Browsers gehalten und nicht dauerhaft im Local Storage abgelegt. Beim Neuladen ist eine erneute Anmeldung nötig.</p>
+  <h2>5. Freigegebene Gästeführer</h2>
+  <p>Zu einer Unterkunft kann ein Administrator ausdrücklich einen Gästeführer-Link aktivieren. Wer den gültigen Link kennt, kann die freigegebenen Informationen über Ankunftszeiten, Parken, WLAN-Netzname (nicht das Passwort), Hausregeln, Abfall und Hilfe lesen. Das ist kein persönlicher Login des Gastes: Der Link kann weitergeleitet werden. Zugang lässt sich deaktivieren oder durch Änderung des Links widerrufen. Die Links und technischen Abrufe können bei den Infrastrukturprovidern in Protokollen erscheinen. Eigentümer und Administratoren müssen deshalb nur veröffentlichungsgeeignete Informationen eintragen.</p>
+  <h2>6. Claude / Künstliche Intelligenz</h2>
+  <p>Eine technische Verbindung zur Anthropic-Claude-API ist vorbereitet, aber zurzeit standardmäßig deaktiviert. Ohne gesonderte Aktivierung werden keine Concierge- oder Radar-Inhalte an Anthropic übertragen. Vor produktiver Aktivierung mit personenbezogenen Inhalten müssen Verwendungszweck, erforderliche Verträge, Auftragsverarbeiter/Unterauftragsverarbeiter, eventuelle Drittlandübermittlungen und dieses Datenschutzhinweis überprüft und gegebenenfalls aktualisiert werden. Das System ist auf Entwürfe und Entscheidungshilfen ausgelegt, nicht auf automatische Entscheidungen über Gäste.</p>
+  <h2>7. Empfänger, Drittlandübermittlungen, Aufbewahrung</h2>
+  <p>Je nach Vorgang können Dienstleister für Hosting (GitHub), E-Mail (Google Workspace) und Datenbank/Authentifizierung (Supabase) beteiligt sein. Ihre rechtlichen Rollen, Auftragsverarbeitungsverträge und gegebenenfalls Garantien für Datenübermittlungen außerhalb des EWR sind anhand der tatsächlich abgeschlossenen Verträge und Datenflüsse zu prüfen. Keine pauschale Aussage auf dieser Seite ersetzt diese Prüfung.</p>
+  <p>Anfragen und Kontaktdaten werden nur solange aufbewahrt, wie die Anfrage, ein mögliches oder bestehendes Vertragsverhältnis und gesetzliche Aufbewahrungspflichten es erfordern. Für die internen Einträge ist aktuell keine automatische Löschfrist implementiert: nicht mehr benötigte Daten müssen regelmäßig manuell geprüft und gelöscht werden. Buchhaltungsrelevante Nachweise können längeren gesetzlichen Fristen unterliegen.</p>
+  <h2>8. Cookies und externe Dienste</h2>
+  <p>Der öffentliche Webauftritt enthält nach dem aktuellen Code keine eigenen Analyse-, Werbe- oder Tracking-Skripte und setzt hierfür keine Einwilligungs-Cookies. Die interne Anmeldung stellt notwendige Verbindungen zur Supabase-API her. Bei zukünftiger Einbindung nicht erforderlicher Tracking-Technologien muss vor deren Verwendung die Rechtslage neu bewertet und gegebenenfalls eine Einwilligung eingeholt werden.</p>
+  <h2>9. Betroffenenrechte</h2>
+  <p>Soweit die gesetzlichen Voraussetzungen erfüllt sind, bestehen Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch gegen bestimmte Verarbeitungen (Art. 15–21 DSGVO). Für Anfragen und gegebenenfalls den Widerruf einer Einwilligung: <a href="mailto:giuseppe@hostdalontano.com">giuseppe@hostdalontano.com</a>. Außerdem können Sie eine Beschwerde bei einer Datenschutzaufsichtsbehörde einreichen, z. B. beim Bayerischen Landesamt für Datenschutzaufsicht (BayLDA).</p>
+  </section>
 
-  <h2>1. Verantwortlicher</h2>
-  <p>Giuseppe Cona, Host da Lontano, 91522 Ansbach, Deutschland<br>
-  E-Mail: <a href="mailto:giuseppe@hostdalontano.com">giuseppe@hostdalontano.com</a></p>
-
-  <h2>2. Hosting</h2>
-  <p>Diese Website wird über GitHub Pages bereitgestellt, einen Dienst der GitHub, Inc. (USA). Beim Aufruf der Seite verarbeitet GitHub technisch notwendige Daten wie IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seite und Browsertyp (Server-Logfiles). Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; mein berechtigtes Interesse liegt im sicheren und stabilen Betrieb der Website.</p>
-  <p>GitHub nimmt am EU-US Data Privacy Framework teil, auf dessen Grundlage die Datenübermittlung in die USA erfolgt (Art. 45 DSGVO). Weitere Informationen: <a href="https://docs.github.com/de/site-policy/privacy-policies/github-general-privacy-statement">Datenschutzerklärung von GitHub</a>.</p>
-
-  <h2>3. Kontakt per E-Mail</h2>
-  <p>Das Formular auf dieser Website sendet keine Daten an einen Server. Es erstellt nur einen E-Mail-Text in Ihrem Browser, den Sie selbst über Ihr E-Mail-Programm versenden. Wenn Sie mir schreiben, verarbeite ich Ihre Angaben (z. B. Name, Ort der Unterkunft, Link zum Inserat) ausschließlich, um Ihre Anfrage zu beantworten. Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO (vorvertragliche Maßnahmen) bzw. lit. f DSGVO.</p>
-  <p>Für E-Mails nutze ich Google Workspace (Google Ireland Limited, Irland). Mit Google besteht ein Vertrag über die Auftragsverarbeitung (Cloud Data Processing Addendum) gemäß Art. 28 DSGVO.</p>
-
-  <h2>4. Cookies, Analyse und externe Inhalte</h2>
-  <p>Diese Website verwendet keine Cookies, keine Analyse- oder Tracking-Tools und lädt keine Schriftarten oder Inhalte von Drittanbietern.</p>
-
-  <h2>5. Speicherdauer</h2>
-  <p>Anfragen per E-Mail lösche ich, sobald sie nicht mehr benötigt werden, sofern keine gesetzlichen Aufbewahrungspflichten bestehen.</p>
-
-  <h2>6. Ihre Rechte</h2>
-  <p>Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch (Art. 15–21 DSGVO). Schreiben Sie dazu einfach an die oben genannte E-Mail-Adresse.</p>
-  <p>Sie können sich außerdem bei einer Datenschutz-Aufsichtsbehörde beschweren. Zuständig für mich ist das Bayerische Landesamt für Datenschutzaufsicht (BayLDA), Promenade 18, 91522 Ansbach.</p>
-
-  <p class="muted" style="margin-top:32px">Stand: 02.11.2026</p>
-  <nav class="links" aria-label="Weitere Seiten"><a href="index.html">Startseite</a><a href="impressum.html">Impressum</a></nav>
+  <section id="it" lang="it">
+  <h2>1. Titolare e contatti</h2>
+  <p>Giuseppe Cona · Host da Lontano · Ansbach, Germania. Email: <a href="mailto:giuseppe@hostdalontano.com">giuseppe@hostdalontano.com</a>. L'indirizzo completo dell'attività deve ancora essere inserito nell'<a href="impressum.html">Impressum</a>. La posizione giuridica e fiscale dell'attività deve essere confermata.</p>
+  <h2>2. Visita al sito</h2>
+  <p>Il sito pubblico è ospitato su GitHub Pages. Il fornitore e la sua infrastruttura possono trattare dati tecnici come indirizzo IP, data e ora della richiesta, pagina e informazioni del browser per servire e proteggere il sito. Per il gestore, la base giuridica è l'interesse legittimo alla disponibilità e sicurezza del sito (art. 6, par. 1, lett. f, GDPR). I fornitori possono applicare le proprie informative ai trattamenti autonomi.</p>
+  <h2>3. Contatti e analisi gratuita</h2>
+  <p>Il modulo pubblico prepara un'email sul dispositivo del visitatore: <strong>non invia automaticamente dati al nostro server</strong>. I dati vengono ricevuti solo quando l'utente invia personalmente l'email. Possiamo trattare nome, email, zona dell'immobile, link dell'annuncio e note volontarie per rispondere, valutare una collaborazione e gestire eventuali rapporti successivi. Basi giuridiche: misure precontrattuali/contratto (art. 6, par. 1, lett. b, GDPR), eventuale interesse legittimo (lett. f) e obblighi di legge (lett. c). La posta elettronica utilizza Google Workspace. Non inviare documenti d'identità, password o codici di accesso.</p>
+  <h2>4. Gestionale riservato</h2>
+  <p>Per l'accesso amministrativo e la gestione di potenziali clienti, proprietari, immobili, compensi, Concierge e Radar utilizziamo Supabase. I dati vengono inseriti manualmente; il database del progetto è nella regione UE, in Germania. Le tabelle sono protette da autenticazione e regole di accesso riservate agli amministratori autorizzati. Il prototipo pubblico è soltanto una simulazione con informazioni inventate.</p>
+  <p>Il token di accesso del gestionale è conservato attualmente solo nella memoria della pagina aperta: non è salvato stabilmente nel browser. La pagina richiede un nuovo accesso dopo il ricaricamento.</p>
+  <h2>5. Guide digitali per gli ospiti</h2>
+  <p>Un amministratore può pubblicare esplicitamente una guida tramite un link univoco revocabile. Chiunque abbia un link attivo può leggere esclusivamente i campi condivisi: check-in/out, parcheggio, nome della rete Wi-Fi senza password, regole, rifiuti e contatti/istruzioni di assistenza. Il link non autentica personalmente l'ospite e può essere inoltrato. Le richieste tecniche e il link potrebbero comparire nei registri dei fornitori. È necessario pubblicare solo informazioni adatte alla condivisione.</p>
+  <h2>6. IA Claude: funzione non ancora attiva</h2>
+  <p>È predisposto un collegamento tecnico all'API Claude di Anthropic, ma rimane disattivato per impostazione predefinita: senza una successiva attivazione non vengono inviati dati di Concierge o Radar ad Anthropic. Prima di usare l'IA con dati personali reali sarà necessario verificare accordi con i fornitori, basi giuridiche, trasferimenti extra SEE, informative e istruzioni documentate, e aggiornare questa pagina dove necessario. Le risposte IA saranno bozze da controllare, senza decisioni automatiche sugli ospiti.</p>
+  <h2>7. Destinatari, eventuali trasferimenti e conservazione</h2>
+  <p>In base all'operazione, possono intervenire GitHub (hosting), Google Workspace (email) e Supabase (database e accessi). I ruoli privacy, gli accordi sul trattamento dati e le garanzie per eventuali trasferimenti fuori dallo Spazio economico europeo devono essere verificati in base ai contratti effettivi e ai flussi di dati; non sono qui dati per scontati.</p>
+  <p>I contatti e i dati sono conservati per il tempo necessario a gestire la richiesta o il rapporto di servizio e per eventuali obblighi legali. Nel gestionale non è attiva una cancellazione automatica: i dati non più necessari dovranno essere verificati e rimossi manualmente. I documenti contabili possono richiedere conservazioni più lunghe.</p>
+  <h2>8. Cookie e strumenti di monitoraggio</h2>
+  <p>Nel codice attuale del sito pubblico non sono presenti strumenti propri di profilazione, pubblicità o analisi del traffico, né cookie installati per queste finalità. Il gestionale comunica con Supabase per l'accesso e le operazioni necessarie. Eventuali futuri strumenti di tracciamento non necessari richiederanno una nuova valutazione e, quando previsto, il consenso preventivo.</p>
+  <h2>9. Diritti e reclami</h2>
+  <p>Nei casi previsti dalla legge puoi chiedere accesso, rettifica, cancellazione, limitazione, portabilità e opposizione al trattamento (artt. 15–21 GDPR), scrivendo a <a href="mailto:giuseppe@hostdalontano.com">giuseppe@hostdalontano.com</a>. Puoi anche proporre reclamo all'autorità di controllo competente, fra cui il Bayerisches Landesamt für Datenschutzaufsicht (BayLDA) in Baviera.</p>
+  </section>
+  <p class="muted" style="margin-top:32px">Testo operativo da completare con indirizzo dell'attività, verifica dei contratti con i fornitori e parere privacy prima di trattare dati reali per conto dei proprietari.</p>
+  <nav class="links" aria-label="Altre pagine / Weitere Seiten"><a href="index.html">Home</a><a href="impressum.html">Impressum</a></nav>
 </main>
 </body>
 </html>
