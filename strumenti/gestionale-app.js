@@ -20,7 +20,18 @@ function empty(tbody,columns){const tr=document.createElement('tr'),td=document.
 function option(select,value,label){let o=document.createElement('option');o.value=value;o.textContent=label;select.append(o)}
 function formData(form){return Object.fromEntries(new FormData(form).entries())}
 function setVisible(yes){el('signInBox').hidden=yes;el('adminBox').hidden=!yes}
-function logout(message='Sessione terminata.'){const token=bearer;bearer=null;clients=[];properties=[];fees=[];leads=[];propertyTools=[];guestShares=[];selectedOccupied=new Set();el('password').value='';el('aiQuestion').value='';el('aiText').textContent='';el('aiResult').hidden=true;el('draftRecipient').value='';el('draftSubject').value='';el('draftBody').value='';el('emailPanel').hidden=true;el('shareUrl').value='';el('guidePreview').hidden=true;setVisible(false);el('loginMessage').textContent=message;if(token)fetch(BASE+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token}}).catch(()=>{})}
+function logout(message='Sessione terminata.'){const token=bearer;bearer=null;clients=[];properties=[];fees=[];leads=[];propertyTools=[];guestShares=[];selectedOccupied=new Set();el('password').value='';el('aiQuestion').value='';el('aiText').textContent='';el('aiResult').hidden=true;el('draftRecipient').value='';el('draftSubject').value='';el('draftBody').value='';el('emailPanel').hidden=true;el('shareUrl').value='';el('guidePreview').hidden=true;
+ // Clear private data from the DOM, not just from the in-memory arrays.
+ const admin=el('adminBox');
+ admin.querySelectorAll('tbody').forEach(node=>node.replaceChildren());
+ admin.querySelectorAll('td').forEach(node=>node.textContent='');
+ admin.querySelectorAll('input:not([type=checkbox]), textarea').forEach(node=>{node.value=''});
+ admin.querySelectorAll('select').forEach(node=>{if(['toolsProperty','propertyClient','feeProperty'].includes(node.id))node.replaceChildren()});
+ for(const id of ['previewTitle','previewArea','previewIn','previewOut','previewParking','previewWifi','previewRules','previewWaste','previewHelp','aiText','aiStatus','shareState','monthlyEmpty','toolsRadarSummary','toolsSummary'])el(id).textContent='';
+ el('toolsCalendar').replaceChildren();el('monthlyChart').replaceChildren();
+ el('totalFees').textContent='—';el('pendingFees').textContent='—';
+ el('clientsCount').textContent='—';el('propertiesCount').textContent='—';el('leadsCount').textContent='—';el('dueCount').textContent='—';
+ setVisible(false);el('loginMessage').textContent=message;if(token)fetch(BASE+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token}}).catch(()=>{})}
 async function refresh(){
  [clients,properties,fees,leads,propertyTools,guestShares]=await Promise.all([
  call('/rest/v1/hdl_clients?select=id,full_name,email,phone,status,notes,created_at&order=created_at.desc&limit=500'),
