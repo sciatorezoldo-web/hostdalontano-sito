@@ -1,7 +1,7 @@
 (()=>{'use strict';
 const BASE='https://kgbkevncksvpfgqsvoqg.supabase.co';
 const KEY='sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX';
-let bearer=null,clients=[],properties=[],fees=[],leads=[],propertyTools=[],selectedOccupied=new Set();
+let bearer=null,clients=[],properties=[],fees=[],leads=[],propertyTools=[],guestShares=[],selectedOccupied=new Set();
 const el=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(Number(n)||0);
 const status=(msg,type='')=>{el('status').textContent=msg;el('status').dataset.type=type};
@@ -20,14 +20,15 @@ function empty(tbody,columns){const tr=document.createElement('tr'),td=document.
 function option(select,value,label){let o=document.createElement('option');o.value=value;o.textContent=label;select.append(o)}
 function formData(form){return Object.fromEntries(new FormData(form).entries())}
 function setVisible(yes){el('signInBox').hidden=yes;el('adminBox').hidden=!yes}
-function logout(message='Sessione terminata.'){const token=bearer;bearer=null;clients=[];properties=[];fees=[];leads=[];propertyTools=[];selectedOccupied=new Set();el('password').value='';setVisible(false);el('loginMessage').textContent=message;if(token)fetch(BASE+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token}}).catch(()=>{})}
+function logout(message='Sessione terminata.'){const token=bearer;bearer=null;clients=[];properties=[];fees=[];leads=[];propertyTools=[];guestShares=[];selectedOccupied=new Set();el('password').value='';setVisible(false);el('loginMessage').textContent=message;if(token)fetch(BASE+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token}}).catch(()=>{})}
 async function refresh(){
- [clients,properties,fees,leads,propertyTools]=await Promise.all([
+ [clients,properties,fees,leads,propertyTools,guestShares]=await Promise.all([
  call('/rest/v1/hdl_clients?select=id,full_name,email,phone,status,notes,created_at&order=created_at.desc&limit=500'),
  call('/rest/v1/hdl_properties?select=id,client_id,name,region,status,listing_url,created_at&order=created_at.desc&limit=500'),
  call('/rest/v1/hdl_compensi?select=id,property_id,period_start,period_end,payout_owner,cleaning_amount,fee_rate,fee_amount,status,paid_at&order=period_start.desc&limit=1000'),
  call('/rest/v1/hdl_leads?select=id,full_name,email,location,source,stage,next_follow_up,last_contact_at,notes,created_at&order=created_at.desc&limit=500'),
- call('/rest/v1/hdl_property_tools?select=property_id,checkin_time,checkout_time,parking,wifi_name,house_rules,waste_info,assistance_info,nightly_rate,sale_probability,occupied_dates&limit=500')]);
+ call('/rest/v1/hdl_property_tools?select=property_id,checkin_time,checkout_time,parking,wifi_name,house_rules,waste_info,assistance_info,nightly_rate,sale_probability,occupied_dates&limit=500'),
+ call('/rest/v1/hdl_guest_shares?select=property_id,share_token,is_published&limit=500')]);
  render();
 }
 function chartNode(tag,cls,textValue){
@@ -248,6 +249,7 @@ function localDate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,
 function nextDates(){const d=new Date();d.setHours(12,0,0,0);return Array.from({length:28},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return x})}
 function loadPropertyTools(){
  el('guidePreview').hidden=true;
+ updateShareView();
  const propertyId=el('toolsProperty').value;
  const form=el('toolsForm');form.hidden=!propertyId;
  if(!propertyId){el('toolsRadarSummary').textContent='Seleziona prima un immobile.';return}
@@ -302,6 +304,71 @@ function renderPrivateCalendar(){
  const estimate=free*(Number.isFinite(rate)?rate:0)*(Number.isFinite(probability)?probability:0)/100;
  el('toolsRadarSummary').textContent='Libere: '+free+' · Occupate: '+occupied+' · Ricavo lordo aggiuntivo ipotetico: '+money(estimate)+'.';
 }
+
+function shareForCurrentProperty(){
+ return guestShares.find(x=>x.property_id===el('toolsProperty').value);
+}
+function shareLink(share){
+ return share?'https://hostdalontano.com/strumenti/guida.html?t='+encodeURIComponent(share.share_token):'';
+}
+function updateShareView(){
+ const propertyId=el('toolsProperty').value,exists=properties.some(p=>p.id===propertyId),share=shareForCurrentProperty();
+ el('shareUrl').value=shareLink(share);
+ el('shareState').textContent=!exists?'Seleziona prima un immobile.':!share?'Non hai creato un link per questa proprietà.':share.is_published?'Guida attiva. Chi conosce il link può leggerla.':'Guida disattivata. Il link non mostra le informazioni.';
+ el('createShare').disabled=!exists||!!share;
+ el('publishShare').disabled=!share||share.is_published;
+ el('disableShare').disabled=!share||!share.is_published;
+ el('copyShare').disabled=!share;
+ el('openShare').disabled=!share;
+ el('rotateShare').disabled=!share;
+}
+async function reloadGuestShares(){
+ guestShares=await call('/rest/v1/hdl_guest_shares?select=property_id,share_token,is_published&limit=500');
+ updateShareView();
+}
+async function shareAction(action){
+ const id=el('toolsProperty').value,existing=shareForCurrentProperty();
+ if(!properties.some(p=>p.id===id))throw Error('Seleziona prima un immobile.');
+ if(action==='create'){
+  if(existing)return;
+  const saved=await call('/rest/v1/hdl_guest_shares',{method:'POST',body:{property_id:id,is_published:false}});
+  if(!Array.isArray(saved)||saved.length!==1)throw Error('Creazione del link non confermata.');
+ }
+ if(action==='publish'){
+  if(!existing||existing.is_published)return;
+  if(!propertyTools.some(p=>p.property_id===id))throw Error('Salva prima la guida Concierge di questo immobile.');
+  if(!window.confirm('Pubblicare questa guida? Chi ha il link potrà leggere orari, Wi-Fi (nome rete), parcheggio, regole, rifiuti e assistenza. Controlla di non avere inserito dati riservati.'))return;
+  const saved=await call('/rest/v1/hdl_guest_shares?property_id=eq.'+encodeURIComponent(id),{method:'PATCH',body:{is_published:true,updated_at:new Date().toISOString()}});
+  if(!Array.isArray(saved)||saved.length!==1)throw Error('Attivazione non confermata.');
+ }
+ if(action==='disable'){
+  if(!existing||!existing.is_published)return;
+  const saved=await call('/rest/v1/hdl_guest_shares?property_id=eq.'+encodeURIComponent(id),{method:'PATCH',body:{is_published:false,updated_at:new Date().toISOString()}});
+  if(!Array.isArray(saved)||saved.length!==1)throw Error('Disattivazione non confermata.');
+ }
+ if(action==='rotate'){
+  if(!existing)return;
+  if(!window.confirm('Sostituire il link? Quello precedente smetterà subito di funzionare. La guida resterà nello stato attuale (attiva o disattivata).'))return;
+  if(!crypto?.randomUUID)throw Error('Il browser non supporta la creazione sicura di un nuovo link.');
+  const saved=await call('/rest/v1/hdl_guest_shares?property_id=eq.'+encodeURIComponent(id),{method:'PATCH',body:{share_token:crypto.randomUUID(),updated_at:new Date().toISOString()}});
+  if(!Array.isArray(saved)||saved.length!==1)throw Error('Sostituzione non confermata.');
+ }
+ await reloadGuestShares();
+ status(action==='create'?'Link creato ma non pubblicato.':action==='publish'?'Guida pubblicata: puoi condividere il link.':action==='disable'?'Guida disattivata.':'Link precedente revocato e sostituito.','ok');
+}
+for(const [name,action] of [['createShare','create'],['publishShare','publish'],['disableShare','disable'],['rotateShare','rotate']]){
+ el(name).addEventListener('click',async()=>{
+  const b=el(name);b.disabled=true;
+  try{await shareAction(action)}catch(err){status('Condivisione: '+err.message,'error');updateShareView()}finally{updateShareView()}
+ });
+}
+el('copyShare').addEventListener('click',async()=>{
+ const url=el('shareUrl').value;if(!url)return;
+ try{await navigator.clipboard.writeText(url);status('Link copiato. Condividilo solo con gli ospiti interessati.','ok')}
+ catch{el('shareUrl').focus();el('shareUrl').select();status('Seleziona e copia il link.','error')}
+});
+el('openShare').addEventListener('click',()=>{const url=el('shareUrl').value;if(url)window.open(url,'_blank','noopener,noreferrer')});
+
 el('toolsProperty').addEventListener('change',loadPropertyTools);
 el('toolRate').addEventListener('input',renderPrivateCalendar);
 el('toolConversion').addEventListener('input',renderPrivateCalendar);
