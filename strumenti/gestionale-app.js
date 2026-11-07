@@ -292,7 +292,50 @@ guard(el('feeForm'),async()=>{
 
 function localDate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function nextDates(){const d=new Date();d.setHours(12,0,0,0);return Array.from({length:28},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return x})}
+
+function clearAiDraft(){
+ el('aiResult').hidden=true;
+ el('aiText').textContent='';
+ el('aiStatus').textContent='Usa solo dati della proprietà già salvati. Nessun messaggio inviato o tariffa modificata.';
+}
+async function runClaude(mode){
+ const id=el('toolsProperty').value,concierge=mode==='concierge',btn=el(concierge?'aiConcierge':'aiRadar');
+ if(!bearer){el('aiStatus').textContent='Sessione non disponibile: accedi nuovamente.';return}
+ if(!properties.some(x=>x.id===id)){el('aiStatus').textContent='Seleziona un immobile.';return}
+ if(!propertyTools.some(x=>x.property_id===id)){el('aiStatus').textContent='Salva prima Concierge e Radar per questo immobile.';return}
+ const question=el('aiQuestion').value.trim();
+ if(concierge&&question.length<2){el('aiStatus').textContent='Scrivi prima la domanda dell’ospite.';el('aiQuestion').focus();return}
+ // Restrict this first release to drafting. No model-initiated mutations or guest messages.
+ el('aiResult').hidden=true;
+ el('aiStatus').textContent='Controllo accesso e collegamento Claude…';
+ el('aiConcierge').disabled=true;el('aiRadar').disabled=true;
+ try{
+  const response=await fetch(BASE+'/functions/v1/hdl-claude-assistant',{
+   method:'POST',
+   headers:{'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+bearer},
+   body:JSON.stringify({mode,property_id:id,question:concierge?question:undefined,language:el('aiLanguage').value}),
+   cache:'no-store'
+  });
+  const data=await response.json().catch(()=>null);
+  if(!response.ok)throw Error(data?.error||'Errore HTTP '+response.status);
+  if(typeof data?.answer!=='string'||!data.answer.trim())throw Error('Nessun testo ricevuto.');
+  if(el('toolsProperty').value!==id){el('aiStatus').textContent='La proprietà è cambiata: risposta scartata per sicurezza.';return}
+  el('aiText').textContent=data.answer;
+  el('aiResult').hidden=false;
+  el('aiStatus').textContent='Bozza generata. Verifica i contenuti: non è stato inviato nulla.';
+ }catch(err){el('aiStatus').textContent='Claude: '+err.message}
+ finally{el('aiConcierge').disabled=false;el('aiRadar').disabled=false}
+}
+el('aiConcierge').addEventListener('click',()=>runClaude('concierge'));
+el('aiRadar').addEventListener('click',()=>runClaude('radar'));
+el('aiCopy').addEventListener('click',async()=>{
+ const text=el('aiText').textContent;if(!text)return;
+ try{await navigator.clipboard.writeText(text);el('aiStatus').textContent='Bozza copiata. Rileggila prima di inviarla.'}
+ catch{el('aiStatus').textContent='Copia automatica non disponibile: seleziona il testo manualmente.'}
+});
+
 function loadPropertyTools(){
+ clearAiDraft();
  el('guidePreview').hidden=true;
  updateShareView();
  const propertyId=el('toolsProperty').value;
