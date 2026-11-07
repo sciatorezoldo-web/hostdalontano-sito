@@ -1,14 +1,14 @@
 (()=>{'use strict';
 const BASE='https://kgbkevncksvpfgqsvoqg.supabase.co';
 const KEY='sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX';
-let bearer=null,clients=[],properties=[],fees=[],leads=[];
+let bearer=null,clients=[],properties=[],fees=[],leads=[],propertyTools=[],selectedOccupied=new Set();
 const el=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(Number(n)||0);
 const status=(msg,type='')=>{el('status').textContent=msg;el('status').dataset.type=type};
 const euroValue=s=>Number(String(s).replace(',','.'));
-async function call(path,{method='GET',body}={}){
+async function call(path,{method='GET',body,prefer}={}){
  const h={'apikey':KEY,'Content-Type':'application/json',...(bearer?{'Authorization':'Bearer '+bearer}:{})};
- if(method!=='GET')h.Prefer='return=representation';
+ if(method!=='GET')h.Prefer=prefer||'return=representation';
  const res=await fetch(BASE+path,{method,headers:h,body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'});
  const data=await res.json().catch(()=>null);
  if(!res.ok)throw Error(data?.message||data?.msg||data?.error_description||data?.error||'Errore HTTP '+res.status);
@@ -20,13 +20,14 @@ function empty(tbody,columns){const tr=document.createElement('tr'),td=document.
 function option(select,value,label){let o=document.createElement('option');o.value=value;o.textContent=label;select.append(o)}
 function formData(form){return Object.fromEntries(new FormData(form).entries())}
 function setVisible(yes){el('signInBox').hidden=yes;el('adminBox').hidden=!yes}
-function logout(message='Sessione terminata.'){const token=bearer;bearer=null;clients=[];properties=[];fees=[];leads=[];el('password').value='';setVisible(false);el('loginMessage').textContent=message;if(token)fetch(BASE+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token}}).catch(()=>{})}
+function logout(message='Sessione terminata.'){const token=bearer;bearer=null;clients=[];properties=[];fees=[];leads=[];propertyTools=[];selectedOccupied=new Set();el('password').value='';setVisible(false);el('loginMessage').textContent=message;if(token)fetch(BASE+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token}}).catch(()=>{})}
 async function refresh(){
- [clients,properties,fees,leads]=await Promise.all([
+ [clients,properties,fees,leads,propertyTools]=await Promise.all([
  call('/rest/v1/hdl_clients?select=id,full_name,email,phone,status,notes,created_at&order=created_at.desc&limit=500'),
  call('/rest/v1/hdl_properties?select=id,client_id,name,region,status,listing_url,created_at&order=created_at.desc&limit=500'),
  call('/rest/v1/hdl_compensi?select=id,property_id,period_start,period_end,payout_owner,cleaning_amount,fee_rate,fee_amount,status,paid_at&order=period_start.desc&limit=1000'),
- call('/rest/v1/hdl_leads?select=id,full_name,email,location,source,stage,next_follow_up,last_contact_at,notes,created_at&order=created_at.desc&limit=500')]);
+ call('/rest/v1/hdl_leads?select=id,full_name,email,location,source,stage,next_follow_up,last_contact_at,notes,created_at&order=created_at.desc&limit=500'),
+ call('/rest/v1/hdl_property_tools?select=property_id,checkin_time,checkout_time,parking,wifi_name,house_rules,waste_info,assistance_info,nightly_rate,sale_probability,occupied_dates&limit=500')]);
  render();
 }
 function chartNode(tag,cls,textValue){
@@ -128,10 +129,14 @@ function render(){
  el('totalFees').textContent=money(fees.reduce((s,f)=>s+Number(f.fee_amount),0));
  el('pendingFees').textContent=money(fees.filter(f=>f.status!=='paid').reduce((s,f)=>s+Number(f.fee_amount),0));
  renderCharts();
- const owner=el('propertyClient'),prop=el('feeProperty');owner.replaceChildren();prop.replaceChildren();
+ const owner=el('propertyClient'),prop=el('feeProperty'),toolSelect=el('toolsProperty'),toolId=toolSelect.value;owner.replaceChildren();prop.replaceChildren();toolSelect.replaceChildren();
+ option(toolSelect,'','Seleziona un immobile');
+ el('toolsSummary').textContent=properties.length?properties.length+' immobile/i registrato/i · '+propertyTools.length+' scheda/e Concierge e Radar salvata/e.':'Nessun immobile ancora registrato. Crea prima un cliente e il suo immobile.';
  option(owner,'','Seleziona un cliente');option(prop,'','Seleziona una proprietà');
  for(const c of clients)option(owner,c.id,c.full_name);
- for(const p of properties)option(prop,p.id,p.name+' · '+(clients.find(c=>c.id===p.client_id)?.full_name||'Cliente'));
+ for(const p of properties){const label=p.name+' · '+(clients.find(c=>c.id===p.client_id)?.full_name||'Cliente');option(prop,p.id,label);option(toolSelect,p.id,label)}
+ if(properties.some(p=>p.id===toolId))toolSelect.value=toolId;
+ if(el('toolsPanel').hidden===false)loadPropertyTools();
  const ct=el('clientsRows');ct.replaceChildren();
  for(const c of clients){const tr=document.createElement('tr');addCell(tr,c.full_name);addCell(tr,c.email||'—');addCell(tr,c.status);addButton(tr,'Modifica',()=>editClient(c));ct.append(tr)}if(!clients.length)empty(ct,4);
  const pt=el('propertiesRows');pt.replaceChildren();
@@ -167,7 +172,7 @@ function editLead(l){openPanel('leadPanel');el('leadForm').reset();el('leadId').
 function editClient(c){openPanel('clientPanel');el('clientForm').reset();el('clientId').value=c.id;el('clientName').value=c.full_name;el('clientEmail').value=c.email||'';el('clientPhone').value=c.phone||'';el('clientStatus').value=c.status;el('clientNotes').value=c.notes||'';el('clientHeading').textContent='Modifica cliente'}
 function editProperty(p){openPanel('propertyPanel');el('propertyForm').reset();el('propertyId').value=p.id;el('propertyClient').value=p.client_id;el('propertyName').value=p.name;el('propertyRegion').value=p.region||'';el('propertyStatus').value=p.status;el('propertyLink').value=p.listing_url||'';el('propertyHeading').textContent='Modifica immobile'}
 function editFee(f){openPanel('feePanel');el('feeForm').reset();el('feeId').value=f.id;el('feeProperty').value=f.property_id;el('start').value=f.period_start;el('end').value=f.period_end;el('payout').value=f.payout_owner;el('cleaning').value=f.cleaning_amount;el('feeRate').value=String(Number(f.fee_rate));el('feeStatus').value=f.status;el('feeHeading').textContent='Modifica compenso'}
-document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.open;openPanel(id);const form=el(id).querySelector('form');form.reset();form.querySelector('input[type=hidden]').value='';el(({leadPanel:'leadHeading',clientPanel:'clientHeading',propertyPanel:'propertyHeading',feePanel:'feeHeading'})[id]).textContent=({leadPanel:'Nuovo contatto interessato',clientPanel:'Nuovo cliente',propertyPanel:'Nuovo immobile',feePanel:'Nuovo compenso'})[id]}));
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.open;openPanel(id);if(id==='toolsPanel'){loadPropertyTools();return}const form=el(id).querySelector('form');form.reset();form.querySelector('input[type=hidden]').value='';el(({leadPanel:'leadHeading',clientPanel:'clientHeading',propertyPanel:'propertyHeading',feePanel:'feeHeading'})[id]).textContent=({leadPanel:'Nuovo contatto interessato',clientPanel:'Nuovo cliente',propertyPanel:'Nuovo immobile',feePanel:'Nuovo compenso'})[id]}));
 el('loginForm').addEventListener('submit',async event=>{
  event.preventDefault();el('loginMessage').textContent='Verifico l’accesso…';const b=el('loginButton');b.disabled=true;
  try{
@@ -237,6 +242,68 @@ guard(el('feeForm'),async()=>{
  if(!Number.isFinite(p)||!Number.isFinite(c)||p<0||c<0||c>p)throw Error('Le pulizie non possono superare l’importo del proprietario.');
  await saveRecord(el('feeForm'),'hdl_compensi','feeId',{property_id:f.property_id,period_start:f.period_start,period_end:f.period_end,payout_owner:p,cleaning_amount:c,fee_rate:rate,status:f.status,paid_at:f.status==='paid'?new Date().toISOString().slice(0,10):null});
 });
+
+function localDate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
+function nextDates(){const d=new Date();d.setHours(12,0,0,0);return Array.from({length:28},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return x})}
+function loadPropertyTools(){
+ const propertyId=el('toolsProperty').value;
+ const form=el('toolsForm');form.hidden=!propertyId;
+ if(!propertyId){el('toolsRadarSummary').textContent='Seleziona prima un immobile.';return}
+ const t=propertyTools.find(x=>x.property_id===propertyId)||{};
+ el('toolCheckin').value=String(t.checkin_time||'16:00').slice(0,5);
+ el('toolCheckout').value=String(t.checkout_time||'10:00').slice(0,5);
+ el('toolParking').value=t.parking||'';
+ el('toolWifi').value=t.wifi_name||'';
+ el('toolRules').value=t.house_rules||'';
+ el('toolWaste').value=t.waste_info||'';
+ el('toolHelp').value=t.assistance_info||'';
+ el('toolRate').value=String(t.nightly_rate??130);
+ el('toolConversion').value=String(t.sale_probability??25);
+ selectedOccupied=new Set(t.occupied_dates||[]);
+ renderPrivateCalendar();
+}
+function renderPrivateCalendar(){
+ const calendar=el('toolsCalendar');calendar.replaceChildren();
+ const dates=nextDates();const labelFormat=new Intl.DateTimeFormat('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+ for(const d of dates){
+  const key=localDate(d),b=document.createElement('button');b.type='button';b.className='privateDay';
+  const short=document.createElement('small');short.textContent=new Intl.DateTimeFormat('it-IT',{weekday:'short'}).format(d);
+  const num=document.createElement('span');num.textContent=String(d.getDate());
+  b.append(short,num);
+  b.setAttribute('aria-pressed',String(selectedOccupied.has(key)));
+  b.setAttribute('aria-label',labelFormat.format(d)+' · '+(selectedOccupied.has(key)?'occupato':'libero'));
+  b.addEventListener('click',()=>{if(selectedOccupied.has(key))selectedOccupied.delete(key);else selectedOccupied.add(key);renderPrivateCalendar()});
+  calendar.append(b);
+ }
+ const occupied=dates.filter(d=>selectedOccupied.has(localDate(d))).length,free=28-occupied;
+ const rate=Number(el('toolRate').value),probability=Number(el('toolConversion').value);
+ const estimate=free*(Number.isFinite(rate)?rate:0)*(Number.isFinite(probability)?probability:0)/100;
+ el('toolsRadarSummary').textContent='Libere: '+free+' · Occupate: '+occupied+' · Ricavo lordo aggiuntivo ipotetico: '+money(estimate)+'.';
+}
+el('toolsProperty').addEventListener('change',loadPropertyTools);
+el('toolRate').addEventListener('input',renderPrivateCalendar);
+el('toolConversion').addEventListener('input',renderPrivateCalendar);
+el('resetTools').addEventListener('click',loadPropertyTools);
+el('toolsForm').addEventListener('submit',async event=>{
+ event.preventDefault();const id=el('toolsProperty').value,btn=el('saveTools');
+ if(!properties.some(x=>x.id===id)){status('Seleziona un immobile valido.','error');return}
+ const rate=Number(el('toolRate').value),prob=Number(el('toolConversion').value);
+ if(!Number.isFinite(rate)||rate<0||rate>10000||!Number.isFinite(prob)||prob<0||prob>100){status('Controlla tariffa e percentuale.','error');return}
+ const payload={
+  property_id:id,checkin_time:el('toolCheckin').value,checkout_time:el('toolCheckout').value,
+  parking:el('toolParking').value.trim(),wifi_name:el('toolWifi').value.trim(),
+  house_rules:el('toolRules').value.trim(),waste_info:el('toolWaste').value.trim(),
+  assistance_info:el('toolHelp').value.trim(),nightly_rate:rate,sale_probability:prob,
+  occupied_dates:[...selectedOccupied].sort(),updated_at:new Date().toISOString()
+ };
+ btn.disabled=true;
+ try{
+  await call('/rest/v1/hdl_property_tools?on_conflict=property_id',{method:'POST',body:payload,prefer:'resolution=merge-duplicates,return=representation'});
+  await refresh();el('toolsProperty').value=id;loadPropertyTools();status('Concierge e Radar salvati per questo immobile.','ok');
+ }catch(error){status('Errore salvataggio strumenti: '+error.message,'error')}
+ finally{btn.disabled=false}
+});
+
 el('refresh').addEventListener('click',async()=>{try{await refresh();status('Dati aggiornati.','ok')}catch(err){status(err.message,'error')}});
 setVisible(false);
 })();
