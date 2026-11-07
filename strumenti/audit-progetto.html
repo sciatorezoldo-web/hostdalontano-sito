@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">
+<title>Revisione progetto · Host da Lontano</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:#f5f8f6;color:#1a3125;line-height:1.6}
+*{box-sizing:border-box}body{margin:0}header{background:#fff;border-bottom:1px solid #d8e5dc;padding:15px max(16px,calc((100vw - 1030px)/2));display:flex;gap:16px;flex-wrap:wrap}header a{color:#245c40;text-decoration:none;font-weight:700}
+main{max-width:1030px;margin:auto;padding:33px 17px 60px}h1{font-size:clamp(29px,5vw,43px);line-height:1.15;margin:8px 0 14px}h2{font-size:23px;margin:0 0 14px}h3{font-size:17px;margin:16px 0 6px}
+p{margin:0 0 13px}.intro{font-size:18px;color:#506756}.eyebrow{font-size:12px;letter-spacing:.12em;color:#977234;font-weight:800;text-transform:uppercase}
+.card{background:#fff;border:1px solid #d7e3d9;border-radius:15px;padding:23px;margin:16px 0}.note{border-left:4px solid #a57e3b;background:#fbf7ed;padding:14px 17px;margin:16px 0;border-radius:0 8px 8px 0}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.metric{padding:15px;border:1px solid #dee8e0;border-radius:11px}.metric strong{font-size:25px;display:block}.muted,small{color:#647468}li{margin-bottom:9px}a{color:#235c40}a:focus-visible{outline:3px solid #b9862f;outline-offset:3px}
+table{width:100%;border-collapse:collapse}th,td{padding:12px 9px;text-align:left;border-bottom:1px solid #e4ece6;vertical-align:top}th{font-size:13px;color:#526756}td:first-child{font-weight:700}.status{font-weight:700}.done{color:#246244}.todo{color:#946120}.blocked{color:#9e3030}
+code{overflow-wrap:anywhere;background:#eef4ef;padding:1px 4px;border-radius:4px}ul,ol{padding-left:23px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}table{display:block;overflow-x:auto}.card{padding:17px}main{padding:22px 12px 45px}}
+@media print{header{display:none}body{background:#fff}.card{break-inside:avoid;border:0;border-top:1px solid #ddd}main{padding:0}}
+</style></head><body>
+<header><a href="accesso.html">← Gestionale</a><a href="manuale-operativo.html">Manuale operativo</a><a href="piano-claude.html">Piano Claude</a></header>
+<main>
+<div class="eyebrow">Rapporto operativo · 8 novembre 2026</div>
+<h1>Revisione del sito e degli strumenti Host da Lontano</h1>
+<p class="intro">Audit del codice GitHub, delle pagine informative e legali, del gestionale Supabase, dei compensi, delle guide e della futura integrazione Claude. Lo scopo è distinguere le correzioni effettivamente applicate dalle verifiche ancora necessarie prima di lavorare con clienti reali.</p>
+<div class="note"><strong>Attenzione:</strong> questa è una revisione tecnica e documentale basata sui file e sulle interrogazioni del database, non una certificazione legale, fiscale, di sicurezza o accessibilità. Non sono stati inventati o inseriti clienti, prenotazioni, immobili né chiavi API. Questo documento è un file pubblico statico accessibile a chi conosce il link: non inserirvi dati riservati.</div>
+<div class="grid">
+ <div class="metric"><small>Ambiti esaminati</small><strong>9</strong><small>Comunicazione, marketing, legali, privacy, database, sicurezza, finanza, strumenti, IA</small></div>
+ <div class="metric"><small>Stato del progetto</small><strong>In sviluppo</strong><small>Funzioni operative, ma collaudi e requisiti legali pendenti</small></div>
+ <div class="metric"><small>Clienti e immobili nel DB al controllo</small><strong>0</strong><small>Nessun dato fittizio creato nell'archivio reale</small></div>
+</div>
+<section class="card">
+<h2>1. Correzioni effettuate</h2>
+<table><thead><tr><th>Ambito</th><th>Risultato</th><th>Stato</th></tr></thead><tbody>
+<tr><td>Testi sito pubblico</td><td>Riformulate affermazioni troppo assolute su costi Airbnb/Vrbo, posizionamento, canali, prenotazione diretta e sincronizzazione calendari; distinti servizi disponibili da integrazioni eventuali.</td><td class="status done">Modificato</td></tr>
+<tr><td>Privacy</td><td>Riorganizzata informativa italiano/tedesco per hosting, email, autenticazione Supabase, contatti/proprietari, guide pubblicate con link e IA Claude disattivata. Esplicitate necessità di verificare contratti e conservazione.</td><td class="status done">Modificato, da validare</td></tr>
+<tr><td>Impressum</td><td>Segnalata esplicitamente la mancanza di indirizzo stradale completo e di ulteriori eventuali dati d'impresa obbligatori. Non sono stati inventati indirizzi o numeri.</td><td class="status blocked">Da completare</td></tr>
+<tr><td>Compensi</td><td>Aggiunto campo data effettiva dell'incasso; il gestionale non rimpiazza più automaticamente la data storica con quella odierna quando modifichi un compenso pagato.</td><td class="status done">Modificato</td></tr>
+<tr><td>Vincoli contabili</td><td>Aggiunto trigger che rifiuta periodi sovrapposti sullo stesso immobile e vincolo che richiede la data per lo stato «Incassato», evitandola negli altri stati.</td><td class="status done">Installato nel DB</td></tr>
+<tr><td>Logout gestionale</td><td>Ripulitura di tabelle, input, bozza email, bozze Claude e informazioni guida dalla memoria dell'interfaccia alla disconnessione, oltre agli array dei dati.</td><td class="status done">Modificato</td></tr>
+<tr><td>Sitemap</td><td>Aggiornata la data di modifica della homepage.</td><td class="status done">Modificato</td></tr>
+</tbody></table>
+</section>
+<section class="card">
+<h2>2. Bloccanti per una piena operatività commerciale</h2>
+<ol>
+<li><strong>Impressum ai sensi del § 5 DDG:</strong> inserire il reale indirizzo completo dell'attività, non soltanto città/CAP; verificare una modalità di comunicazione rapida, forma giuridica, eventuale iscrizione, numero IVA/W-IdNr. e altri obblighi applicabili. Un segnaposto non assolve la legge.</li>
+<li><strong>Inquadramento giuridico/fiscale Germania–Italia:</strong> confermare chi fattura, dove è stabilita l'attività, eventuale registrazione, regime IVA, luogo delle prestazioni, obblighi contabili e fatturazione transfrontaliera con professionista competente.</li>
+<li><strong>Bozza contratto:</strong> non è pronta alla firma. Vanno determinati attività, deleghe e limiti, corrispettivo e base di calcolo, criteri per ricavi/cancellazioni, durata, recesso, responsabilità, legge applicabile e clausole per eventuali consumatori.</li>
+<li><strong>Ruoli GDPR e documenti:</strong> valutare per ogni flusso chi è titolare o responsabile, eventuali accordi art. 28 GDPR con proprietari e fornitori, trasferimenti extra SEE, informativa definitiva e termini di conservazione. Non presumere l'esistenza di accordi non verificati.</li>
+<li><strong>Supabase Auth:</strong> il consulente di sicurezza segnala che la protezione contro password compromesse è disabilitata. Abilitarla dall'area Authentication nelle impostazioni del progetto, poi rifare l'audit.</li>
+<li><strong>Collaudi end-to-end:</strong> ancora necessari test con accesso admin, navigazione mobile, tastiera/screen reader, browser reali e un percorso intero con dati autorizzati. Non si è creato un cliente fittizio nel database per completare tali test.</li>
+</ol>
+</section>
+<section class="card">
+<h2>3. Sito commerciale, marketing e trasparenza</h2>
+<p><strong>Esaminato:</strong> homepage, navigazione desktop/mobile, offerte e FAQ, contatti, modulo email, sitemap, robots, pagina 404, demo pubblica.</p>
+<ul>
+<li>Il sito spiega una gestione esclusivamente online. Pulizie, chiavi, manutenzione, interventi fisici, fotografie professionali e adempimenti fiscali/amministrativi restano esclusi salvo diversi incarichi scritti.</li>
+<li>L'analisi gratuita prepara una email nel browser ma non invia i dati automaticamente. Il visitatore deve premere «Invia» nella propria applicazione di posta. La funzionalità è presente e la validazione del codice è stata controllata.</li>
+<li>Prezzi comunicati: 18% ordinario, 15% per i primi tre mesi dalla data concordata e 18% successivamente, 20% esclusivamente dopo accordo specifico. Base indicata: pagamento al proprietario al netto delle pulizie; la fiscalità effettiva deve ancora essere verificata.</li>
+<li>È stata corretta l'impressione che un sito diretto sia automaticamente un motore di prenotazioni integrato. Un sito dedicato è separatamente preventivato: contatti, pagamenti e calendari richiedono funzionalità da progettare.</li>
+<li>I costi OTA non sono necessariamente fissi. Airbnb/Booking/Vrbo possono applicare condizioni diverse in base a Paese, piano, software e transazione: verificare tariffe effettive nel portale prima di fare conti per un proprietario.</li>
+<li><strong>Da provare su dispositivi:</strong> resa iPhone/Android, pagina con navigazione da tastiera, mailto senza client di posta configurato, form con link lunghi, contrasto colori, stato di errore, menu e zoom al 200%.</li>
+</ul>
+</section>
+<section class="card">
+<h2>4. Database, accesso e protezione degli ospiti</h2>
+<ul>
+<li>Le tabelle <code>hdl_clients</code>, <code>hdl_properties</code>, <code>hdl_leads</code>, <code>hdl_compensi</code>, <code>hdl_property_tools</code> e <code>hdl_guest_shares</code> hanno RLS attivato e sono dedicate al gestionale. L'amministrazione è limitata dalla whitelist <code>hdl_admin_accounts</code>.</li>
+<li>Le guide ospiti si consultano tramite token UUID; l'accesso non è per utente singolo. L'API restituisce solo nove campi pubblicabili (senza compensi, calendario o tariffa). La pubblicazione e la revoca del link richiedono un'azione esplicita.</li>
+<li>L'RPC <code>hdl_read_guest_guide</code> è volutamente eseguibile senza accesso, perché un ospite con token valido deve leggere la guida. È un'eccezione pubblica e va rivalutata e testata a ogni modifica; il relativo avviso di sicurezza Supabase è atteso in questa architettura.</li>
+<li>La quota <code>hdl_ai_usage</code> ha RLS senza policy e non è leggibile direttamente dai ruoli browser. La funzione <code>hdl_ai_claim_request</code> è eseguibile da utenti autenticati ma verifica anche la whitelist admin. Gli avvisi del linter su funzioni SECURITY DEFINER vanno interpretati alla luce di questi vincoli e ri-verificati.</li>
+<li>Non è presente un sistema automatico di cancellazione di contatti, backup applicativo controllato, recupero dati verificato o registro di incidenti: richiedono procedura organizzativa prima dell'ingresso di dati reali.</li>
+</ul>
+</section>
+<section class="card">
+<h2>5. Compensi e correttezza economica</h2>
+<ul>
+<li>Il database calcola la tariffa in base al piano associato all'immobile; test di sola lettura: standard 18%, lancio 15%, fase successiva 18%, speciale 20%.</li>
+<li>Le settimane o i mesi che attraversano il passaggio 15%→18% devono essere spezzati in periodi non sovrapposti, con criteri contrattuali chiari per assegnare i ricavi e rettifiche future.</li>
+<li>I compensi calcolati non sono fatture e non certificano l'incasso; confrontare sempre con rendiconti ufficiali e banca. Le fatture si emettono secondo le regole fiscali effettivamente applicabili.</li>
+<li>Ora i periodi sovrapposti dello stesso immobile sono rifiutati dal database e le date d'incasso sono registrate in modo esplicito. Serve comunque una procedura per storni, rimborsi e rettifiche su compensi già emessi o pagati.</li>
+</ul>
+</section>
+<section class="card">
+<h2>6. Concierge, Radar e Claude</h2>
+<ul>
+<li><strong>Demo pubblica:</strong> appartamento inventato e calendario di prova senza dati reali, messaggi o prenotazioni. L'assistente demo è a regole fisse, non IA.</li>
+<li><strong>Concierge privato:</strong> per ogni immobile registrato conserva manualmente orari, parcheggio, nome rete Wi-Fi, regole, rifiuti e istruzioni di assistenza. Possibilità di anteprima e pubblicazione volontaria della guida via link.</li>
+<li><strong>Radar privato:</strong> calendario manuale 28 giorni, tariffa e percentuale ipotetica. La proiezione è una simulazione e non una previsione statistica, né deriva automaticamente dai portali.</li>
+<li><strong>Claude:</strong> pulsanti UI presenti; Edge Function Supabase distribuita con controllo autenticazione, whitelist admin e quota iniziale di 12 richieste per amministratore e giorno UTC. Chiamate Anthropic disabilitate fino alla configurazione volontaria di <code>ANTHROPIC_API_KEY</code> e <code>HDL_AI_ENABLED=true</code>.</li>
+<li>Il codice Claude è versionato nel repository, ma una modifica a GitHub non distribuisce automaticamente la funzione Supabase. Testare il server e i controlli dopo ogni nuova versione.</li>
+<li>Prima di attivare Claude con contenuti reali occorrono verifiche privacy, autorizzazioni dei proprietari, minimizzazione e collaudi anti-invenzione. Nessun chatbot invia automaticamente risposte agli ospiti né cambia i prezzi.</li>
+</ul>
+</section>
+<section class="card">
+<h2>7. Verifiche tecniche completate e limiti</h2>
+<table><thead><tr><th>Verifica</th><th>Esito</th></tr></thead><tbody>
+<tr><td>Albero file GitHub</td><td>Enumerate pagine pubbliche, guide, manuale, documentazione e codice Edge Function.</td></tr>
+<tr><td>JavaScript</td><td>Analizzate sintatticamente le funzioni JS inline e il gestionale; IDs doppi non rilevati; riferimenti agli elementi del gestionale confrontati con HTML.</td></tr>
+<tr><td>SQL</td><td>Vincoli finanziari e trigger installati; interrogazioni senza inserimenti per controllare aliquote, tabelle vuote e quota IA.</td></tr>
+<tr><td>Advisors Supabase</td><td>Letti avvisi di sicurezza e performance. Indici segnalati «mai usati» non sono necessariamente inutili con database ancora vuoto.</td></tr>
+<tr><td>Pubblicazione GitHub Pages</td><td>Verificati i workflow di pubblicazione. Occorre ancora controllare via browser dal dispositivo dell'utente l'esperienza finale.</td></tr>
+<tr><td>Test HTTP esterno</td><td>Non conclusivo dall'ambiente di analisi: l'accesso al dominio o la risoluzione DNS non erano disponibili. Un workflow GitHub riuscito non prova da solo ogni pagina nel browser.</td></tr>
+<tr><td>Autenticazione reale / Claude API</td><td>Nessun test completo effettuato con account personale, chiave Claude o immobile reale: non dichiarare l'integrazione pienamente collaudata.</td></tr>
+</tbody></table>
+</section>
+<section class="card">
+<h2>8. Checklist finale prima del primo cliente</h2>
+<ol>
+<li>Completare Impressum e privacy con dati aziendali reali e validazione professionale.</li>
+<li>Verificare apertura e posizione fiscale effettiva tra Germania e Italia, inclusi IVA e fatturazione.</li>
+<li>Validare contratto e allegati, ruoli GDPR, deleghe ai portali, limiti sui prezzi e responsabilità delle emergenze.</li>
+<li>Abilitare protezione password compromesse in Supabase e valutare MFA per l'account amministratore.</li>
+<li>Stabilire procedure di backup/ripristino, esportazione, cancellazione dati, conservazione e gestione incidenti.</li>
+<li>Provare davvero tutti i flussi con dati legittimi: contatto → cliente → immobile → guida → calendario → compenso → rendiconto.</li>
+<li>Attivare Claude solo con controlli su budget, sicurezza e minimizzazione; testare le risposte e l'avviso «dato non disponibile».</li>
+<li>Verificare dominio, certificato HTTPS, browser mobile e principali percorsi della homepage dopo ogni rilascio.</li>
+<li>Soltanto dopo: cercare i primi proprietari e avviare il servizio concordato.</li>
+</ol>
+</section>
+<section class="card">
+<h2>9. Riferimenti ufficiali</h2>
+<p><a href="https://www.gesetze-im-internet.de/ddg/__5.html">§ 5 Digitale-Dienste-Gesetz — dati obbligatori del prestatore</a> · <a href="https://www.gesetze-im-internet.de/ttdsg/__25.html">§ 25 TDDDG — cookie e accesso a dispositivi</a> · <a href="https://eur-lex.europa.eu/eli/reg/2016/679/oj">Regolamento (UE) 2016/679 — GDPR</a> · <a href="https://supabase.com/docs/guides/auth/password-security">Supabase Auth: sicurezza password</a> · <a href="https://docs.github.com/en/pages/getting-started-with-github-pages/securing-your-github-pages-site-with-https">GitHub Pages: HTTPS</a>.</p>
+<p class="muted">La verifica legale deve tenere conto della situazione concreta, della normativa applicabile e delle versioni aggiornate al momento della pubblicazione. Nessuna raccomandazione fiscale o legale qui sostituisce una consulenza qualificata.</p>
+</section>
+</main></body></html>
