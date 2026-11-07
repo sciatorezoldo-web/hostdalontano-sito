@@ -24,7 +24,7 @@ function logout(message='Sessione terminata.'){const token=bearer;bearer=null;cl
 async function refresh(){
  [clients,properties,fees,leads,propertyTools,guestShares]=await Promise.all([
  call('/rest/v1/hdl_clients?select=id,full_name,email,phone,status,notes,created_at&order=created_at.desc&limit=500'),
- call('/rest/v1/hdl_properties?select=id,client_id,name,region,status,listing_url,created_at&order=created_at.desc&limit=500'),
+ call('/rest/v1/hdl_properties?select=id,client_id,name,region,status,listing_url,pricing_plan,contract_start,created_at&order=created_at.desc&limit=500'),
  call('/rest/v1/hdl_compensi?select=id,property_id,period_start,period_end,payout_owner,cleaning_amount,fee_rate,fee_amount,status,paid_at&order=period_start.desc&limit=1000'),
  call('/rest/v1/hdl_leads?select=id,full_name,email,location,source,stage,next_follow_up,last_contact_at,notes,created_at&order=created_at.desc&limit=500'),
  call('/rest/v1/hdl_property_tools?select=property_id,checkin_time,checkout_time,parking,wifi_name,house_rules,waste_info,assistance_info,nightly_rate,sale_probability,occupied_dates&limit=500'),
@@ -171,9 +171,48 @@ function prepareDraft(l){
 }
 function editLead(l){openPanel('leadPanel');el('leadForm').reset();el('leadId').value=l.id;el('leadName').value=l.full_name;el('leadEmail').value=l.email||'';el('leadLocation').value=l.location||'';el('leadSource').value=l.source;el('leadStage').value=l.stage;el('leadFollowUp').value=l.next_follow_up||'';el('leadLastContact').value=l.last_contact_at||'';el('leadNotes').value=l.notes||'';el('leadHeading').textContent='Modifica contatto'}
 function editClient(c){openPanel('clientPanel');el('clientForm').reset();el('clientId').value=c.id;el('clientName').value=c.full_name;el('clientEmail').value=c.email||'';el('clientPhone').value=c.phone||'';el('clientStatus').value=c.status;el('clientNotes').value=c.notes||'';el('clientHeading').textContent='Modifica cliente'}
-function editProperty(p){openPanel('propertyPanel');el('propertyForm').reset();el('propertyId').value=p.id;el('propertyClient').value=p.client_id;el('propertyName').value=p.name;el('propertyRegion').value=p.region||'';el('propertyStatus').value=p.status;el('propertyLink').value=p.listing_url||'';el('propertyHeading').textContent='Modifica immobile'}
-function editFee(f){openPanel('feePanel');el('feeForm').reset();el('feeId').value=f.id;el('feeProperty').value=f.property_id;el('start').value=f.period_start;el('end').value=f.period_end;el('payout').value=f.payout_owner;el('cleaning').value=f.cleaning_amount;el('feeRate').value=String(Number(f.fee_rate));el('feeStatus').value=f.status;el('feeHeading').textContent='Modifica compenso'}
-document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.open;openPanel(id);if(id==='toolsPanel'){loadPropertyTools();return}const form=el(id).querySelector('form');form.reset();form.querySelector('input[type=hidden]').value='';el(({leadPanel:'leadHeading',clientPanel:'clientHeading',propertyPanel:'propertyHeading',feePanel:'feeHeading'})[id]).textContent=({leadPanel:'Nuovo contatto interessato',clientPanel:'Nuovo cliente',propertyPanel:'Nuovo immobile',feePanel:'Nuovo compenso'})[id]}));
+function editProperty(p){openPanel('propertyPanel');el('propertyForm').reset();el('propertyId').value=p.id;el('propertyClient').value=p.client_id;el('propertyName').value=p.name;el('propertyRegion').value=p.region||'';el('propertyStatus').value=p.status;el('propertyLink').value=p.listing_url||'';el('propertyPricingPlan').value=p.pricing_plan||'standard';el('propertyContractStart').value=p.contract_start||'';togglePropertyContractDate();el('propertyHeading').textContent='Modifica immobile'}
+function editFee(f){openPanel('feePanel');el('feeForm').reset();el('feeId').value=f.id;el('feeProperty').value=f.property_id;el('start').value=f.period_start;el('end').value=f.period_end;el('payout').value=f.payout_owner;el('cleaning').value=f.cleaning_amount;el('feeStatus').value=f.status;showEffectiveFee();el('feeHeading').textContent='Modifica compenso'}
+
+function togglePropertyContractDate(){
+ const launch=el('propertyPricingPlan').value==='launch';
+ el('propertyStartBox').hidden=!launch;
+ el('propertyContractStart').required=launch;
+ if(!launch)el('propertyContractStart').value='';
+}
+el('propertyPricingPlan').addEventListener('change',togglePropertyContractDate);
+function addMonthsDateString(ymd,months){
+ const parts=ymd.split('-').map(Number);
+ if(parts.length!==3||parts.some(x=>!Number.isInteger(x)))return null;
+ const date=new Date(Date.UTC(parts[0],parts[1]-1+months,parts[2]));
+ if(Number.isNaN(date.getTime()))return null;
+ return date.toISOString().slice(0,10);
+}
+function effectiveFee(propertyId,start,end){
+ const p=properties.find(x=>x.id===propertyId);
+ if(!p)return {error:'Seleziona un immobile registrato.'};
+ if(!start||!end||start>end)return {error:'Inserisci un periodo valido.'};
+ if(p.pricing_plan==='special20')return {rate:0.20,label:'20% · accordo particolare'};
+ if(p.pricing_plan==='launch'){
+  if(!p.contract_start)return {error:'Manca la data di inizio dell’accordo promozionale nella scheda dell’immobile.'};
+  if(start<p.contract_start)return {error:'Il periodo precede l’inizio dell’accordo promozionale.'};
+  const cutoff=addMonthsDateString(p.contract_start,3);
+  if(!cutoff)return {error:'Data promozionale non valida.'};
+  if(start<cutoff&&end>=cutoff)return {error:'Il periodo attraversa il cambio tariffa del '+cutoff+'. Crea due compensi separati: uno fino al giorno prima e uno dal '+cutoff+'.'};
+  if(start<cutoff)return {rate:0.15,label:'15% · lancio fino al '+cutoff+' escluso'};
+  return {rate:0.18,label:'18% · promozione terminata dal '+cutoff};
+ }
+ return {rate:0.18,label:'18% · gestione ordinaria'};
+}
+function showEffectiveFee(){
+ const result=effectiveFee(el('feeProperty').value,el('start').value,el('end').value);
+ el('feeRate').value=result.rate!==undefined?Math.round(result.rate*100)+'%':'—';
+ el('feeRateExplain').textContent=result.error||result.label+'. Aliquota confermata dal database al salvataggio.';
+ el('feeRateExplain').style.color=result.error?'#a23a32':'';
+}
+for(const id of ['feeProperty','start','end'])el(id).addEventListener('change',showEffectiveFee);
+
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.open;openPanel(id);if(id==='toolsPanel'){loadPropertyTools();return}const form=el(id).querySelector('form');form.reset();form.querySelector('input[type=hidden]').value='';if(id==='propertyPanel')togglePropertyContractDate();if(id==='feePanel')showEffectiveFee();el(({leadPanel:'leadHeading',clientPanel:'clientHeading',propertyPanel:'propertyHeading',feePanel:'feeHeading'})[id]).textContent=({leadPanel:'Nuovo contatto interessato',clientPanel:'Nuovo cliente',propertyPanel:'Nuovo immobile',feePanel:'Nuovo compenso'})[id]}));
 el('loginForm').addEventListener('submit',async event=>{
  event.preventDefault();el('loginMessage').textContent='Verifico l’accesso…';const b=el('loginButton');b.disabled=true;
  try{
@@ -235,14 +274,18 @@ guard(el('clientForm'),async()=>{
 });
 guard(el('propertyForm'),async()=>{
  const f=formData(el('propertyForm'));if(!f.client_id||!f.name?.trim())throw Error('Seleziona il cliente e scrivi il nome della proprietà.');
- await saveRecord(el('propertyForm'),'hdl_properties','propertyId',{client_id:f.client_id,name:f.name.trim(),region:f.region?.trim()||null,listing_url:f.listing_url?.trim()||null,status:f.status});
+ if(!['standard','launch','special20'].includes(f.pricing_plan))throw Error('Piano tariffario non valido.');
+ if(f.pricing_plan==='launch'&&!f.contract_start)throw Error('Inserisci la data di inizio della promozione.');
+ await saveRecord(el('propertyForm'),'hdl_properties','propertyId',{client_id:f.client_id,name:f.name.trim(),region:f.region?.trim()||null,listing_url:f.listing_url?.trim()||null,status:f.status,pricing_plan:f.pricing_plan,contract_start:f.pricing_plan==='launch'?f.contract_start:null});
 });
 guard(el('feeForm'),async()=>{
- const f=formData(el('feeForm')),p=euroValue(f.payout_owner),c=euroValue(f.cleaning_amount),rate=euroValue(f.fee_rate);
+ const f=formData(el('feeForm')),p=euroValue(f.payout_owner),c=euroValue(f.cleaning_amount);
  if(!f.property_id)throw Error('Seleziona la proprietà.');
  if(!f.period_start||!f.period_end||f.period_start>f.period_end)throw Error('Controlla le date.');
  if(!Number.isFinite(p)||!Number.isFinite(c)||p<0||c<0||c>p)throw Error('Le pulizie non possono superare l’importo del proprietario.');
- await saveRecord(el('feeForm'),'hdl_compensi','feeId',{property_id:f.property_id,period_start:f.period_start,period_end:f.period_end,payout_owner:p,cleaning_amount:c,fee_rate:rate,status:f.status,paid_at:f.status==='paid'?new Date().toISOString().slice(0,10):null});
+ const result=effectiveFee(f.property_id,f.period_start,f.period_end);
+ if(result.error)throw Error(result.error);
+ await saveRecord(el('feeForm'),'hdl_compensi','feeId',{property_id:f.property_id,period_start:f.period_start,period_end:f.period_end,payout_owner:p,cleaning_amount:c,status:f.status,paid_at:f.status==='paid'?new Date().toISOString().slice(0,10):null});
 });
 
 function localDate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
