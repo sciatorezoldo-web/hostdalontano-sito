@@ -191,6 +191,19 @@ footer nav a:hover{color:#fff}
   .steps{grid-template-columns:1fr}
   .audit{margin-top:8px}
 }
+
+/* Navigazione accessibile e adattamento smartphone */
+.mobile-nav{display:none;position:relative}
+.mobile-nav summary{cursor:pointer;list-style:none;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-weight:650;color:var(--shutter);min-height:44px;display:flex;align-items:center}
+.mobile-nav summary::-webkit-details-marker{display:none}
+.mobile-nav[open] nav{position:absolute;top:calc(100% + 8px);right:0;z-index:30;background:white;border:1px solid var(--line);box-shadow:0 16px 38px rgba(16,24,21,.14);border-radius:12px;min-width:220px;padding:7px;display:grid}
+.mobile-nav nav a{text-decoration:none;padding:11px 12px;border-radius:6px;font-size:.95rem}
+.mobile-nav nav a:hover,.mobile-nav nav a:focus-visible{background:var(--alt)}
+input,textarea,select{max-width:100%}
+@media(max-width:860px){.mobile-nav{display:block}.top{gap:10px}.brand{margin-right:auto}}
+@media(max-width:520px){.top{padding-block:9px}.brand{font-size:.91rem;gap:5px}.brand svg{width:28px;height:28px}.top-cta{font-size:.82rem;padding:10px 11px;min-height:44px}.mobile-nav summary{font-size:.9rem;padding:10px}.tools-embed iframe{height:610px!important}form{padding:19px}.hero-actions .btn{width:100%;min-height:46px}input,textarea,select{font-size:16px}.out-actions .btn{width:100%}}
+@media(max-width:370px){.brand{font-size:.83rem}.top-cta{font-size:.75rem;padding:9px}.mobile-nav summary{padding:9px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
 </style>
 </head>
 <body>
@@ -209,7 +222,8 @@ footer nav a:hover{color:#fff}
     <a href="#chi-sono">Chi sono</a>
     <a href="#domande">Domande</a>
   </nav>
-  <a class="btn btn-primary btn-sm" href="#analisi">Analisi gratuita</a>
+  <details class="mobile-nav"><summary aria-label="Apri il menu del sito">Menu</summary><nav aria-label="Navigazione mobile"><a href="#servizio">Servizio</a><a href="#prezzi">Prezzi</a><a href="#strumenti">Strumenti</a><a href="#come-funziona">Come funziona</a><a href="#domande">Domande</a><a href="#analisi">Analisi gratuita</a></nav></details>
+  <a class="btn btn-primary btn-sm top-cta" href="#analisi">Analisi gratuita</a>
 </header>
 </div>
 
@@ -329,7 +343,7 @@ footer nav a:hover{color:#fff}
     <p class="label">Strumenti per i proprietari</p>
     <h2 style="margin-top:12px">Concierge digitale e Radar Clienti</h2>
     <p class="lead" style="margin-top:16px">Sto sviluppando due strumenti per rendere più semplice l'accoglienza degli ospiti e individuare i periodi liberi da valorizzare. Puoi esplorare qui una prima versione dimostrativa.</p>
-    <div style="margin-top:28px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff">
+    <div class="tools-embed" style="margin-top:28px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff">
       <iframe src="strumenti/" title="Anteprima interattiva di Concierge digitale e Radar Clienti" loading="lazy" style="display:block;width:100%;height:780px;border:0" referrerpolicy="strict-origin-when-cross-origin"></iframe>
     </div>
     <p style="margin-top:14px;color:var(--muted);font-size:.9rem">Anteprima in sviluppo con dati fittizi. Nessuna prenotazione, messaggio o dato viene inviato.</p>
@@ -440,22 +454,22 @@ footer nav a:hover{color:#fff}
 
       <form id="audit-form" novalidate>
         <label for="f-name">Il tuo nome
-          <input id="f-name" name="name" autocomplete="name" placeholder="Es. Maria" required>
+          <input id="f-name" name="name" autocomplete="name" placeholder="Es. Maria" maxlength="120" required>
         </label>
         <label for="f-city">Dov'è la casa
-          <input id="f-city" name="city" placeholder="Es. Noto (SR)" required>
+          <input id="f-city" name="city" placeholder="Es. Noto (SR)" maxlength="160" required>
         </label>
         <label for="f-link">Link dell'annuncio (se la casa è già online)
-          <input id="f-link" name="link" type="url" inputmode="url" placeholder="https://www.airbnb.it/rooms/…">
+          <input id="f-link" name="link" type="url" inputmode="url" maxlength="1000" placeholder="https://www.airbnb.it/rooms/…">
         </label>
         <label for="f-email">Email per la risposta (facoltativa)
-          <input id="f-email" name="reply_email" type="email" inputmode="email" autocomplete="email" placeholder="nome@esempio.it">
+          <input id="f-email" name="reply_email" type="email" inputmode="email" autocomplete="email" maxlength="240" placeholder="nome@esempio.it">
         </label>
         <label for="f-note">Qualcosa da aggiungere
-          <textarea id="f-note" name="note" placeholder="Es. la casa non è ancora online, vivo a Milano…"></textarea>
+          <textarea id="f-note" name="note" maxlength="2000" placeholder="Es. la casa non è ancora online, vivo a Milano…"></textarea>
         </label>
         <button class="btn btn-primary" type="submit">Prepara l'email per l'analisi</button>
-        <p class="hero-note" style="margin-top:10px">Il modulo non invia nulla automaticamente: controlla il messaggio e premi «Invia» nella tua app email.</p>
+        <p class="hero-note" style="margin-top:10px">Il modulo prepara un messaggio sul tuo dispositivo, senza trasmettere dati al sito. Controlla l’email prima di premere «Invia» nella tua app di posta. Consulta anche la <a href="privacy.html">privacy</a>.</p>
         <p class="status" id="f-status" role="status" aria-live="polite"></p>
         <div class="out" id="out" hidden>
           <span class="label">Il tuo messaggio</span>
@@ -527,6 +541,13 @@ footer nav a:hover{color:#fff}
     out.hidden = false;
     status.textContent = "Email pronta ma non ancora inviata. Premi «Apri l'email», poi inviala dal tuo programma di posta. Se non si apre, copia il testo e mandalo a " + EMAIL + ".";
   });
+
+  // Chiude il menu mobile dopo la scelta di una sezione.
+  var mobileMenu=document.querySelector(".mobile-nav");
+  if(mobileMenu){ mobileMenu.querySelectorAll("nav a").forEach(function(a){a.addEventListener("click",function(){mobileMenu.open=false;});}); }
+
+  // Evita di presentare come pronta una bozza ormai diversa dai campi modificati.
+  form.addEventListener("input",function(){out.hidden=true;status.textContent="";});
 
   copyBtn.addEventListener("click", function(){
     var text = outText.textContent;
