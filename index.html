@@ -193,6 +193,9 @@ footer nav a:hover{color:#fff}
 }
 
 /* Navigazione accessibile e adattamento smartphone */
+.skip-link{position:fixed;left:12px;top:-100px;z-index:100;background:var(--shutter);color:#fff;padding:12px 18px;border-radius:8px;font-weight:700}
+.skip-link:focus{top:12px}
+#inizio{scroll-margin-top:80px}
 .mobile-nav{display:none;position:relative}
 .mobile-nav summary{cursor:pointer;list-style:none;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-weight:650;color:var(--shutter);min-height:44px;display:flex;align-items:center}
 .mobile-nav summary::-webkit-details-marker{display:none}
@@ -207,6 +210,7 @@ input,textarea,select{max-width:100%}
 </style>
 </head>
 <body>
+<a class="skip-link" href="#inizio">Vai al contenuto principale</a>
 
 <div class="topbar">
 <header class="wrap top">
@@ -218,6 +222,7 @@ input,textarea,select{max-width:100%}
     <a href="#servizio">Servizio</a>
     <a href="#canali">Canali</a>
     <a href="#prezzi">Prezzi</a>
+    <a href="#strumenti">Strumenti</a>
     <a href="#come-funziona">Come funziona</a>
     <a href="#chi-sono">Chi sono</a>
     <a href="#domande">Domande</a>
