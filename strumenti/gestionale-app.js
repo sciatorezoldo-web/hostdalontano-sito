@@ -1,6 +1,5 @@
 (()=>{'use strict';
-// Anti-clickjacking: GitHub Pages non permette l'header frame-ancestors, quindi il gestionale si rifiuta di funzionare dentro un frame.
-if(window.top!==window.self){document.body.replaceChildren();const p=document.createElement('p');p.style.padding='24px';const a=document.createElement('a');a.href=location.href;a.target='_top';a.rel='noopener';a.textContent='Apri il gestionale in una finestra separata';p.append(a);document.body.append(p);return}
+if(window.top!==window.self){document.documentElement.textContent='';try{window.top.location.href=window.self.location.href}catch(e){}return}
 const BASE='https://kgbkevncksvpfgqsvoqg.supabase.co';
 const KEY='sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX';
 let bearer=null,refreshToken=null,expiresAt=0,renewing=null,toolsDirty=false,clients=[],properties=[],fees=[],leads=[],propertyTools=[],guestShares=[],selectedOccupied=new Set();
@@ -284,6 +283,22 @@ function exportContacts(){
  status('Esportazione dei contatti preparata. Il file contiene dati personali: conservalo in modo sicuro.','ok');
 }
 el('exportLeads').addEventListener('click',exportContacts);
+// Full backup of everything loaded in the dashboard, as one JSON file kept by the owner.
+function downloadBackup(){
+ if(!bearer){status('Accedi prima di scaricare la copia di sicurezza.','error');return}
+ const now=new Date();
+ const stamp=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
+ const data={formato:'host-da-lontano-backup',versione:1,creato_il:now.toISOString(),
+  conteggi:{clienti:clients.length,immobili:properties.length,compensi:fees.length,contatti:leads.length,strumenti_immobili:propertyTools.length,guide_ospiti:guestShares.length},
+  hdl_clients:clients,hdl_properties:properties,hdl_compensi:fees,hdl_leads:leads,hdl_property_tools:propertyTools,hdl_guest_shares:guestShares};
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+ const url=URL.createObjectURL(blob);
+ const link=document.createElement('a');link.href=url;link.download='host-da-lontano-backup-'+stamp+'.json';
+ document.body.append(link);link.click();link.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+ status('Copia di sicurezza scaricata. Contiene dati personali e i link delle guide: conservala in un posto privato, non condividerla.','ok');
+}
+el('backup').addEventListener('click',downloadBackup);
 el('leadFilter').addEventListener('change',render);
 el('openDraftEmail').addEventListener('click',()=>{
  const email=el('draftRecipient').value.trim(),sub=el('draftSubject').value.trim(),body=el('draftBody').value;
