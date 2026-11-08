@@ -315,8 +315,9 @@ guard(el('feeForm'),async()=>{
  await saveRecord(el('feeForm'),'hdl_compensi','feeId',{property_id:f.property_id,period_start:f.period_start,period_end:f.period_end,payout_owner:p,cleaning_amount:c,status:f.status,paid_at:f.status==='paid'?f.paid_at:null});
 });
 
-function localDate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
-function nextDates(){const d=new Date();d.setHours(12,0,0,0);return Array.from({length:28},(_,i)=>{const x=new Date(d);x.setDate(d.getDate()+i);return x})}
+// Radar dates follow the Italian calendar (Europe/Rome), the same as the server function.
+function localDate(d){return [d.getUTCFullYear(),String(d.getUTCMonth()+1).padStart(2,'0'),String(d.getUTCDate()).padStart(2,'0')].join('-')}
+function nextDates(){const p=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()).split('-').map(Number);return Array.from({length:28},(_,i)=>new Date(Date.UTC(p[0],p[1]-1,p[2]+i,12)))}
 
 function clearAiDraft(){
  el('aiResult').hidden=true;
@@ -401,11 +402,11 @@ el('closeGuidePreview').addEventListener('click',()=>el('guidePreview').hidden=t
 
 function renderPrivateCalendar(){
  const calendar=el('toolsCalendar');calendar.replaceChildren();
- const dates=nextDates();const labelFormat=new Intl.DateTimeFormat('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+ const dates=nextDates();const labelFormat=new Intl.DateTimeFormat('it-IT',{timeZone:'UTC',weekday:'long',day:'numeric',month:'long',year:'numeric'});
  for(const d of dates){
   const key=localDate(d),b=document.createElement('button');b.type='button';b.className='privateDay';
-  const short=document.createElement('small');short.textContent=new Intl.DateTimeFormat('it-IT',{weekday:'short'}).format(d);
-  const num=document.createElement('span');num.textContent=String(d.getDate());
+  const short=document.createElement('small');short.textContent=new Intl.DateTimeFormat('it-IT',{timeZone:'UTC',weekday:'short'}).format(d);
+  const num=document.createElement('span');num.textContent=String(d.getUTCDate());
   b.append(short,num);
   b.setAttribute('aria-pressed',String(selectedOccupied.has(key)));
   b.setAttribute('aria-label',labelFormat.format(d)+' · '+(selectedOccupied.has(key)?'occupato':'libero'));
