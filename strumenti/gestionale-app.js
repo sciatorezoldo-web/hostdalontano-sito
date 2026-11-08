@@ -11,7 +11,7 @@ async function call(path,{method='GET',body,prefer}={}){
  if(method!=='GET')h.Prefer=prefer||'return=representation';
  const res=await fetch(BASE+path,{method,headers:h,body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'});
  const data=await res.json().catch(()=>null);
- if(!res.ok){if(res.status===401&&bearer)throw Error('Sessione scaduta. Esci e accedi nuovamente.');throw Error(data?.message||data?.msg||data?.error_description||data?.error||'Errore HTTP '+res.status)}
+ if(!res.ok){if(res.status===401&&bearer){logout('Sessione scaduta: accedi di nuovo.');throw Error('Sessione scaduta: accedi di nuovo.')}throw Error(data?.message||data?.msg||data?.error_description||data?.error||'Errore HTTP '+res.status)}
  return data;
 }
 function addCell(row,value){const td=document.createElement('td');td.textContent=String(value??'—');row.append(td)}
@@ -27,7 +27,7 @@ function logout(message='Sessione terminata.'){const token=bearer;bearer=null;cl
  admin.querySelectorAll('td').forEach(node=>node.textContent='');
  admin.querySelectorAll('input:not([type=checkbox]), textarea').forEach(node=>{node.value=''});
  admin.querySelectorAll('select').forEach(node=>{if(['toolsProperty','propertyClient','feeProperty'].includes(node.id))node.replaceChildren()});
- for(const id of ['previewTitle','previewArea','previewIn','previewOut','previewParking','previewWifi','previewRules','previewWaste','previewHelp','aiText','aiStatus','shareState','monthlyEmpty','toolsRadarSummary','toolsSummary'])el(id).textContent='';
+ for(const id of ['previewTitle','previewArea','previewIn','previewOut','previewParking','previewWifi','previewRules','previewWaste','previewHelp','aiText','aiStatus','shareState','toolsRadarSummary','toolsSummary'])el(id).textContent='';
  el('toolsCalendar').replaceChildren();el('monthlyChart').replaceChildren();
  el('totalFees').textContent='—';el('pendingFees').textContent='—';
  el('clientsCount').textContent='—';el('propertiesCount').textContent='—';el('leadsCount').textContent='—';el('dueCount').textContent='—';
@@ -183,7 +183,7 @@ function prepareDraft(l){
 function editLead(l){openPanel('leadPanel');el('leadForm').reset();el('leadId').value=l.id;el('leadName').value=l.full_name;el('leadEmail').value=l.email||'';el('leadLocation').value=l.location||'';el('leadSource').value=l.source;el('leadStage').value=l.stage;el('leadFollowUp').value=l.next_follow_up||'';el('leadLastContact').value=l.last_contact_at||'';el('leadNotes').value=l.notes||'';el('leadHeading').textContent='Modifica contatto'}
 function editClient(c){openPanel('clientPanel');el('clientForm').reset();el('clientId').value=c.id;el('clientName').value=c.full_name;el('clientEmail').value=c.email||'';el('clientPhone').value=c.phone||'';el('clientStatus').value=c.status;el('clientNotes').value=c.notes||'';el('clientHeading').textContent='Modifica cliente'}
 function editProperty(p){openPanel('propertyPanel');el('propertyForm').reset();el('propertyId').value=p.id;el('propertyClient').value=p.client_id;el('propertyName').value=p.name;el('propertyRegion').value=p.region||'';el('propertyStatus').value=p.status;el('propertyLink').value=p.listing_url||'';el('propertyPricingPlan').value=p.pricing_plan||'standard';el('propertyContractStart').value=p.contract_start||'';togglePropertyContractDate();el('propertyHeading').textContent='Modifica immobile'}
-function editFee(f){openPanel('feePanel');el('feeForm').reset();el('feeId').value=f.id;el('feeProperty').value=f.property_id;el('start').value=f.period_start;el('end').value=f.period_end;el('payout').value=f.payout_owner;el('cleaning').value=f.cleaning_amount;el('feeStatus').value=f.status;togglePaidAt();el('paidAt').value=f.paid_at||((f.status==='paid')?new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()):'');showEffectiveFee();el('feeHeading').textContent='Modifica compenso'}
+function editFee(f){openPanel('feePanel');el('feeForm').reset();el('feeId').value=f.id;el('feeProperty').value=f.property_id;el('start').value=f.period_start;el('end').value=f.period_end;el('payout').value=f.payout_owner;el('cleaning').value=f.cleaning_amount;el('feeStatus').value=f.status;togglePaidAt();el('paidAt').value=f.paid_at||'';showEffectiveFee();el('feeHeading').textContent='Modifica compenso'}
 
 function togglePropertyContractDate(){
  const launch=el('propertyPricingPlan').value==='launch';
@@ -249,7 +249,7 @@ el('loginForm').addEventListener('submit',async event=>{
 el('testConnection').addEventListener('click',async()=>{const result=el('connectionResult');result.textContent='Controllo connessione in corso…';try{const controller=new AbortController();const timeout=Promise.race([fetch(BASE+'/auth/v1/health',{headers:{apikey:KEY},signal:controller.signal,cache:'no-store'}),new Promise((_,reject)=>setTimeout(()=>{controller.abort();reject(Error('Connessione scaduta'))},9000))]);const response=await timeout;result.textContent=response.ok?'Collegamento Supabase raggiungibile. Ora prova ad accedere.':'Servizio di autenticazione raggiunto, risposta HTTP '+response.status+'.';}catch(err){result.textContent='Non riesco a raggiungere Supabase da questo browser. Verifica la connessione o eventuali blocchi del browser. Dettaglio: '+err.message}});
 function csvCell(v){
  const raw=String(v??'');
- const safe=/^\s*[=+@-]/.test(raw)?"'"+raw:raw;
+ const safe=/^[\t\r]|^\s*[=+@-]/.test(raw)?"'"+raw:raw;
  return '"'+safe.replace(/"/g,'""')+'"';
 }
 function exportContacts(){
@@ -267,8 +267,8 @@ el('exportLeads').addEventListener('click',exportContacts);
 el('leadFilter').addEventListener('change',render);
 el('openDraftEmail').addEventListener('click',()=>{
  const email=el('draftRecipient').value.trim(),sub=el('draftSubject').value.trim(),body=el('draftBody').value;
- if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){status('L’indirizzo del destinatario non è valido.','error');return}
- window.location.href='mailto:'+email+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body);
+ if(!/^[^\s@?&#,;]+@[^\s@?&#,;]+\.[^\s@?&#,;]+$/.test(email)){status('L’indirizzo del destinatario non è valido.','error');return}
+ window.location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(sub)+'&body='+encodeURIComponent(body);
  status('È stata preparata l’email. Ricorda di premere Invia nel programma di posta.');
 });
 el('copyDraftEmail').addEventListener('click',async()=>{
@@ -303,10 +303,15 @@ guard(el('feeForm'),async()=>{
  const f=formData(el('feeForm')),p=euroValue(f.payout_owner),c=euroValue(f.cleaning_amount);
  if(!f.property_id)throw Error('Seleziona la proprietà.');
  if(!f.period_start||!f.period_end||f.period_start>f.period_end)throw Error('Controlla le date.');
- if(!Number.isFinite(p)||!Number.isFinite(c)||p<0||c<0||c>p)throw Error('Le pulizie non possono superare l’importo del proprietario.');
+ if(!Number.isFinite(p)||p<=0)throw Error('Inserisci un importo per il proprietario maggiore di zero.');
+ if(!Number.isFinite(c)||c<0)throw Error('L’importo delle pulizie non può essere negativo.');
+ if(c>p)throw Error('Le pulizie non possono superare l’importo del proprietario.');
+ const overlap=fees.find(x=>x.property_id===f.property_id&&String(x.id)!==String(f.id||el('feeId').value)&&x.period_start<=f.period_end&&x.period_end>=f.period_start);
+ if(overlap)throw Error('Esiste già un compenso per questa proprietà nel periodo '+overlap.period_start+' – '+overlap.period_end+'.');
  const result=effectiveFee(f.property_id,f.period_start,f.period_end);
  if(result.error)throw Error(result.error);
  if(f.status==='paid'&&!/^\d{4}-\d{2}-\d{2}$/.test(f.paid_at||''))throw Error('Indica la data reale di incasso.');
+ if(f.status==='paid'){const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());if(f.paid_at>today)throw Error('La data di incasso non può essere nel futuro.');if(f.paid_at<f.period_start)throw Error('La data di incasso non può essere prima dell’inizio del periodo.');}
  await saveRecord(el('feeForm'),'hdl_compensi','feeId',{property_id:f.property_id,period_start:f.period_start,period_end:f.period_end,payout_owner:p,cleaning_amount:c,status:f.status,paid_at:f.status==='paid'?f.paid_at:null});
 });
 

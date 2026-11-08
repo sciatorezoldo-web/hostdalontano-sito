@@ -169,7 +169,7 @@ section:nth-of-type(even){background:var(--alt)}
 form{display:grid;gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:28px;min-width:0;box-shadow:0 18px 40px -22px rgba(16,24,21,.18)}
 label{display:grid;gap:6px;font-weight:600;font-size:.95rem}
 input,select,textarea{font:inherit;font-weight:400;color:var(--ink);background:#fff;border:1px solid #CFD6D2;border-radius:8px;padding:.75em .9em;width:100%}
-input:focus,textarea:focus{border-color:var(--shutter);outline:none;box-shadow:0 0 0 3px rgba(31,90,68,.15)}
+input:focus,textarea:focus{border-color:var(--shutter);box-shadow:0 0 0 3px rgba(31,90,68,.15)}
 textarea{min-height:96px;resize:vertical}
 .out{display:grid;gap:10px;border-top:1px solid var(--line);padding-top:16px}
 .out pre{white-space:pre-wrap;word-break:break-word;font-family:inherit;font-size:.92rem;background:var(--alt);border-radius:8px;padding:12px;margin:0;max-height:220px;overflow:auto}
@@ -239,7 +239,7 @@ input,textarea,select{max-width:100%}
     <div>
       <p class="label">Gestione online di case vacanza · tutta Italia</p>
       <h1 style="margin-top:14px">La tua casa vacanza piace a chi ci va. <em>Facciamola trovare</em> a più persone.</h1>
-      <p class="lead">Mi occupo della parte online: annunci su Airbnb e Booking, selezione e ordine delle foto disponibili, strategia prezzi, messaggi agli ospiti e recensioni. Tu, o una persona di fiducia, vi occupate della casa. Funziona anche se vivi lontano.</p>
+      <p class="lead">Mi occupo della parte online: annunci su Airbnb e Booking, selezione e ordine delle foto disponibili, strategia prezzi, messaggi agli ospiti e recensioni. Della casa ti occupi tu o una persona di fiducia. Funziona anche se vivi lontano.</p>
       <div class="hero-actions">
         <a class="btn btn-primary" href="#analisi">Mandami il tuo annuncio</a>
         <a class="btn btn-ghost" href="#canali">Canali e costi</a>
@@ -275,7 +275,7 @@ input,textarea,select{max-width:100%}
         <div class="err"><span class="label">Errore 1</span><h3>La prima foto</h3><p>Su Airbnb e Booking si decide in due secondi. Se la prima foto è una facciata o una stanza buia, la gente scorre oltre.</p></div>
         <div class="err"><span class="label">Errore 2</span><h3>Poche recensioni</h3><p>Le recensioni aiutano i viaggiatori a scegliere, ma il posizionamento dipende da più fattori. Poche recensioni possono rendere l'annuncio meno convincente rispetto ai concorrenti.</p></div>
         <div class="err"><span class="label">Errore 3</span><h3>Una descrizione che elenca</h3><p>"Due camere, una cucina, un bagno" non convince nessuno. Serve dire perché scegliere proprio la tua casa.</p></div>
-        <div class="err"><span class="label">Errore 4</span><h3>Lo stesso prezzo tutto l'anno</h3><p>Un sabato di agosto e un martedì di novembre non valgono uguale. Con un prezzo fisso perdi soldi in estate e resti vuoto in inverno.</p></div>
+        <div class="err"><span class="label">Errore 4</span><h3>Lo stesso prezzo tutto l'anno</h3><p>Un sabato di agosto e un martedì di novembre non valgono lo stesso. Con un prezzo fisso perdi soldi in estate e resti vuoto in inverno.</p></div>
         <div class="err"><span class="label">Errore 5</span><h3>Risposte lente</h3><p>Chi chiede informazioni scrive a più case insieme. Di solito prenota da chi risponde per primo.</p></div>
         <div class="err"><span class="label">Errore 6</span><h3>Commissioni non aggiornate</h3><p>Airbnb ha introdotto nel 2026 la struttura a commissione unica per molti host: spesso il 15,5%, con eccezioni. La tariffa effettiva va verificata nel proprio account e nelle singole prenotazioni.</p></div>
       </div>
@@ -291,11 +291,11 @@ input,textarea,select{max-width:100%}
           <span class="label">Cosa faccio io</span>
           <h3>Tutto il lavoro online</h3>
           <ul>
-            <li>Titolo e descrizione in italiano, inglese, tedesco, francese e spagnolo</li>
+            <li>Titolo e descrizione in italiano, inglese e tedesco</li>
             <li>Ordine delle foto e lista delle foto da rifare</li>
             <li>Prezzi per stagione, weekend, eventi e soggiorni lunghi</li>
             <li>Controllo delle disponibilità e, quando disponibile e autorizzato, configurazione di collegamenti tra calendari esterni</li>
-            <li>Su richiesta e con preventivo separato, un sito per la casa con richiesta di prenotazione diretta; disponibilità e integrazioni da verificare</li>
+            <li>Su richiesta e con preventivo separato, un sito per la casa con richiesta di prenotazione diretta; disponibilità e collegamenti con i portali da valutare caso per caso</li>
             <li>Messaggi agli ospiti, prima e durante il soggiorno</li>
             <li>Richiesta e risposta alle recensioni</li>
             <li>Un breve report ogni mese</li>
@@ -321,7 +321,7 @@ input,textarea,select{max-width:100%}
     <div class="wrap">
       <p class="label">Più canali, meno commissioni</p>
       <h2 style="margin-top:12px">Non solo Booking e Airbnb. Ogni casa sui canali giusti.</h2>
-      <p class="lead" style="margin-top:16px">Airbnb, Booking e altri portali hanno costi e modelli commissionali differenti. Per ogni casa valuteremo i canali adatti e la disponibilità di collegamenti autorizzati per ridurre il rischio di doppie prenotazioni. Nessuna sincronizzazione è già automatica negli strumenti dimostrativi.</p>
+      <p class="lead" style="margin-top:16px">Airbnb, Booking e altri portali hanno costi e modelli commissionali differenti. Per ogni casa valuteremo i canali adatti e la disponibilità di collegamenti autorizzati per ridurre il rischio di doppie prenotazioni. Gli strumenti dimostrativi non sincronizzano alcun calendario.</p>
       <div class="channels">
         <div class="ch">
           <span class="label">Canali principali</span>
@@ -332,7 +332,7 @@ input,textarea,select{max-width:100%}
         <div class="ch">
           <span class="label">Canale in più</span>
           <h3>Vrbo</h3>
-          <p>Molto usato da famiglie e gruppi stranieri. Adatto in particolare a diverse tipologie di case e gruppi. Le commissioni dipendono dal contratto, dal Paese e dagli eventuali software utilizzati.</p>
+          <p>Molto usato da famiglie e gruppi stranieri. Le commissioni dipendono dal contratto, dal Paese e dagli eventuali software utilizzati.</p>
           <span class="fee">Tariffe da verificare sul proprio account</span>
         </div>
         <div class="ch ch-direct">
@@ -363,7 +363,7 @@ input,textarea,select{max-width:100%}
     <div class="wrap">
       <p class="label">Prezzi</p>
       <h2 style="margin-top:12px">Un compenso chiaro per seguire la tua casa online.</h2>
-      <p class="lead" style="margin-top:16px">Nessun canone mensile per la gestione online: il compenso è una percentuale sui ricavi effettivamente riconosciuti al proprietario, al netto delle pulizie. Se non ci sono prenotazioni, non matura alcun compenso di gestione.</p>
+      <p class="lead" style="margin-top:16px">Nessun canone mensile per la gestione online: il compenso è una percentuale sull’importo accreditato al proprietario, al netto delle commissioni dei portali e delle pulizie. Se non ci sono prenotazioni, non matura alcun compenso di gestione.</p>
       <div class="prices">
         <div class="price">
           <span class="label">Per iniziare</span>
@@ -394,7 +394,7 @@ input,textarea,select{max-width:100%}
           <a class="btn btn-ghost" href="#analisi">Chiedi informazioni</a>
         </div>
       </div>
-      <p class="price-note"><strong>Come si calcola:</strong> la percentuale si applica all’importo riconosciuto al proprietario dalla piattaforma, escludendo le spese di pulizia. Esempio: 1.100 € riconosciuti, di cui 100 € per pulizie → base di 1.000 € → compenso ordinario di 180 € (18%). Per immobili con esigenze online particolari, la tariffa può arrivare al <strong>20%</strong>, solo previo preventivo e accordo. Il servizio per un sito dedicato è quotato separatamente. <strong>Imposte:</strong> le percentuali indicate sono compensi di gestione; l’eventuale IVA viene indicata in preventivo e fattura secondo il regime fiscale applicabile. L’accordo scritto definisce attività, canali, orari e tempi di risposta, durata, preavviso di recesso e gestione dei periodi che attraversano un cambio di tariffa. Nessuna modifica contrattuale viene applicata senza accordo.</p>
+      <p class="price-note"><strong>Come si calcola:</strong> la percentuale si applica all’importo accreditato al proprietario, già al netto delle commissioni dei portali, escludendo le spese di pulizia. Esempio: 1.100 € riconosciuti, di cui 100 € per pulizie → base di 1.000 € → compenso ordinario di 180 € (18%). Per immobili con esigenze online particolari, la tariffa è del <strong>20%</strong>, solo con un accordo particolare approvato per iscritto. Il servizio per un sito dedicato è quotato separatamente. <strong>Imposte:</strong> le percentuali indicate sono compensi di gestione; l’eventuale IVA viene indicata in preventivo e fattura secondo il regime fiscale applicabile. L’accordo scritto definisce attività, canali, orari e tempi di risposta, durata, preavviso di recesso e gestione dei periodi che attraversano un cambio di tariffa. Nessuna modifica contrattuale viene applicata senza accordo.</p>
     </div>
   </section>
 
@@ -435,12 +435,12 @@ input,textarea,select{max-width:100%}
       <h2 style="margin-top:12px">Quello che mi chiedono più spesso</h2>
       <div class="faq">
         <details><summary>Devo darti le password dei miei account?</summary><p>No. Utilizziamo, quando previsti dal portale, inviti come co-host o accessi delegati con i permessi necessari. Non mi devi comunicare la password personale: gli accessi si autorizzano e si revocano con le funzioni della piattaforma.</p></details>
-        <details><summary>Quanto costa?</summary><p>L’analisi iniziale è gratuita. Il compenso ordinario per la gestione online è del 18% sull’importo riconosciuto al proprietario, escluse le pulizie. Per i primi proprietari propongo il 15% nei primi 3 mesi dalla data di avvio concordata, poi il 18%. Per immobili più impegnativi è possibile concordare una tariffa fino al 20%, prima di iniziare. Nessun canone mensile di gestione. Ogni condizione viene riportata nell’accordo scritto.</p></details>
+        <details><summary>Quanto costa?</summary><p>L’analisi iniziale è gratuita. Il compenso ordinario per la gestione online è del 18% sull’importo accreditato al proprietario, al netto delle commissioni dei portali e delle pulizie. Per i primi proprietari propongo il 15% nei primi 3 mesi dalla data di avvio concordata, poi il 18%. Per immobili più impegnativi si può concordare, prima di iniziare e per iscritto, una tariffa del 20%. Nessun canone mensile di gestione. Ogni condizione viene riportata nell’accordo scritto.</p></details>
         <details><summary>Incassi tu i soldi delle prenotazioni?</summary><p>No. I pagamenti degli ospiti arrivano da Airbnb e Booking direttamente a te. Io ti mando solo la fattura per il mio lavoro.</p></details>
         <details><summary>E se un ospite ha un problema di notte?</summary><p>La comunicazione online viene gestita secondo i canali e gli orari di reperibilità definiti nell’accordo. Per problemi che richiedono una presenza fisica, interviene il proprietario o il referente locale. Non è incluso un servizio di pronto intervento sul posto.</p></details>
-        <details><summary>La mia casa non è ancora online. Puoi aiutarmi lo stesso?</summary><p>Sì. Ti aiuto a preparare annuncio, foto, prezzi e la lista delle cose da sistemare prima di partire, compresi i documenti come il CIN.</p></details>
+        <details><summary>La mia casa non è ancora online. Puoi aiutarmi lo stesso?</summary><p>Sì. Ti aiuto a preparare annuncio, foto, prezzi e la lista delle cose da sistemare prima della pubblicazione. Ti indico anche i documenti necessari, come il CIN, che restano a tuo carico.</p></details>
         <details><summary>Possiamo sentirci al telefono o in videochiamata?</summary><p>Sì, quando hai deciso di affidarmi la gestione. Per rispettare il tempo di tutti e due, fino a quel momento ci sentiamo per email: hai l'analisi per iscritto e puoi valutarla con calma. Una volta presa la decisione, facciamo una chiamata o una videochiamata per organizzare la partenza: accessi alle piattaforme, chi si occupa della casa e i primi lavori da fare.</p></details>
-        <details><summary>Puoi creare un sito per la mia casa?</summary><p>Sì, su richiesta. Preparo un sito tutto per la tua casa, con foto, descrizione in più lingue e un modulo per richiedere informazioni o prenotazioni. Un'eventuale sincronizzazione delle disponibilità con i portali viene valutata e configurata separatamente, dove tecnicamente possibile. L'ho fatto anche per la mia casa in Sicilia. Il costo del sito si concorda a parte, una volta sola.</p></details>
+        <details><summary>Puoi creare un sito per la mia casa?</summary><p>Sì, su richiesta. Preparo un sito tutto per la tua casa, con foto, descrizione in più lingue e un modulo per richiedere informazioni o prenotazioni. Un'eventuale sincronizzazione delle disponibilità con i portali viene valutata e configurata separatamente, dove tecnicamente possibile. L'ho fatto anche per la mia casa in Sicilia. Il costo del sito si concorda a parte; dominio, hosting, manutenzione e pagamenti online possono avere costi ricorrenti separati.</p></details>
         <details><summary>Posso ridurre le commissioni di Booking e Airbnb?</summary><p>Non si possono eliminare, perché sono loro a portare la maggior parte degli ospiti. Si possono confrontare i costi effettivi dei portali e valutare anche Vrbo o un sito diretto. Per contatti e prenotazioni gestite direttamente non si pagano commissioni ai portali, ma restano possibili costi tecnici, fiscali o di pagamento.</p></details>
         <details><summary>Dove lavori?</summary><p>In tutta Italia, e spero un giorno anche qui in Germania, dove vivo. Visto che seguo tutto online, la casa può essere ovunque: serve solo che ci sia qualcuno sul posto per pulizie e chiavi.</p></details>
       </div>
@@ -452,7 +452,7 @@ input,textarea,select{max-width:100%}
       <div>
         <p class="label">Analisi gratuita</p>
         <h2 style="margin-top:12px">Mandami il tuo annuncio. Ti dico cosa cambierei.</h2>
-        <p class="lead" style="margin-top:16px">Raccontami dove si trova la casa e, se già pubblicato, aggiungi il link dell'annuncio. Ti preparo il testo dell'email da inviarmi: potrò esaminare l'annuncio e risponderti via email con una prima valutazione. Nessun impegno.</p>
+        <p class="lead" style="margin-top:16px">Raccontami dove si trova la casa e, se l'annuncio è già pubblicato, aggiungi il suo link. Ti preparo il testo dell'email da inviarmi: potrò esaminare l'annuncio e risponderti via email con una prima valutazione. Nessun impegno.</p>
         <div class="contact-direct">
           <div><span class="label">Preferisci scrivermi direttamente?</span><a id="mail-text" class="mail-link" href="mailto:giuseppe@hostdalontano.com?subject=Informazioni%20su%20Host%20da%20Lontano">giuseppe@hostdalontano.com</a></div>
           <a class="btn btn-ghost" style="justify-self:start" href="mailto:giuseppe@hostdalontano.com?subject=Informazioni%20su%20Host%20da%20Lontano">Scrivimi un'email</a>
@@ -477,7 +477,7 @@ input,textarea,select{max-width:100%}
           <textarea id="f-note" name="note" maxlength="2000" placeholder="Es. la casa non è ancora online, vivo a Milano…"></textarea>
         </label>
         <button class="btn btn-primary" type="submit">Prepara l'email per l'analisi</button>
-        <p class="hero-note" style="margin-top:10px">Il modulo prepara un messaggio sul tuo dispositivo, senza trasmettere dati al sito. Controlla l’email prima di premere «Invia» nella tua app di posta. Consulta anche la <a href="privacy.html">privacy</a>.</p>
+        <p class="hero-note" style="margin-top:10px">Il modulo prepara un messaggio sul tuo dispositivo, senza trasmettere dati al sito. Controlla l’email prima di premere «Invia» nella tua app di posta. Consulta anche l’<a href="privacy.html">informativa privacy</a>.</p>
         <p class="status" id="f-status" role="status" aria-live="polite"></p>
         <div class="out" id="out" hidden>
           <span class="label">Il tuo messaggio</span>

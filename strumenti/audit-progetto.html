@@ -23,7 +23,7 @@ code{overflow-wrap:anywhere;background:#eef4ef;padding:1px 4px;border-radius:4px
 <div class="grid">
  <div class="metric"><small>Ambiti esaminati</small><strong>9</strong><small>Comunicazione, marketing, legali, privacy, database, sicurezza, finanza, strumenti, IA</small></div>
  <div class="metric"><small>Stato del progetto</small><strong>In sviluppo</strong><small>Funzioni operative, ma collaudi e requisiti legali pendenti</small></div>
- <div class="metric"><small>Clienti e immobili nel DB al controllo</small><strong>0</strong><small>Nessun dato fittizio creato nell'archivio reale</small></div>
+ <div class="metric"><small>Dati reali nell'archivio</small><strong>—</strong><small>Il conteggio si vede solo nel gestionale privato. Nessun dato fittizio creato.</small></div>
 </div>
 <section class="card">
 <h2>1. Correzioni effettuate</h2>
@@ -44,7 +44,7 @@ code{overflow-wrap:anywhere;background:#eef4ef;padding:1px 4px;border-radius:4px
 <li><strong>Inquadramento giuridico/fiscale Germania–Italia:</strong> confermare chi fattura, dove è stabilita l'attività, eventuale registrazione, regime IVA, luogo delle prestazioni, obblighi contabili e fatturazione transfrontaliera con professionista competente.</li>
 <li><strong>Bozza contratto:</strong> non è pronta alla firma. Vanno determinati attività, deleghe e limiti, corrispettivo e base di calcolo, criteri per ricavi/cancellazioni, durata, recesso, responsabilità, legge applicabile e clausole per eventuali consumatori.</li>
 <li><strong>Ruoli GDPR e documenti:</strong> valutare per ogni flusso chi è titolare o responsabile, eventuali accordi art. 28 GDPR con proprietari e fornitori, trasferimenti extra SEE, informativa definitiva e termini di conservazione. Non presumere l'esistenza di accordi non verificati.</li>
-<li><strong>Supabase Auth:</strong> il consulente di sicurezza segnala che la protezione contro password compromesse è disabilitata. Abilitarla dall'area Authentication nelle impostazioni del progetto, poi rifare l'audit.</li>
+<li><strong>Accesso amministratore:</strong> alcune impostazioni di sicurezza dell'accesso vanno ancora completate. I dettagli sono nella checklist privata, non in questa pagina pubblica.</li>
 <li><strong>Collaudi end-to-end:</strong> ancora necessari test con accesso admin, navigazione mobile, tastiera/screen reader, browser reali e un percorso intero con dati autorizzati. Non si è creato un cliente fittizio nel database per completare tali test.</li>
 </ol>
 </section>
@@ -63,10 +63,10 @@ code{overflow-wrap:anywhere;background:#eef4ef;padding:1px 4px;border-radius:4px
 <section class="card">
 <h2>4. Database, accesso e protezione degli ospiti</h2>
 <ul>
-<li>Le tabelle <code>hdl_clients</code>, <code>hdl_properties</code>, <code>hdl_leads</code>, <code>hdl_compensi</code>, <code>hdl_property_tools</code> e <code>hdl_guest_shares</code> hanno RLS attivato e sono dedicate al gestionale. L'amministrazione è limitata dalla whitelist <code>hdl_admin_accounts</code>.</li>
+<li>I dati del gestionale sono protetti con regole di accesso a livello di riga e sono riservati agli account amministratore autorizzati.</li>
 <li>Le guide ospiti si consultano tramite token UUID; l'accesso non è per utente singolo. L'API restituisce solo nove campi pubblicabili (senza compensi, calendario o tariffa). La pubblicazione e la revoca del link richiedono un'azione esplicita.</li>
-<li>L'RPC <code>hdl_read_guest_guide</code> è volutamente eseguibile senza accesso, perché un ospite con token valido deve leggere la guida. È un'eccezione pubblica e va rivalutata e testata a ogni modifica; il relativo avviso di sicurezza Supabase è atteso in questa architettura.</li>
-<li>La quota <code>hdl_ai_usage</code> ha RLS senza policy e non è leggibile direttamente dai ruoli browser. La funzione <code>hdl_ai_claim_request</code> è eseguibile da utenti autenticati ma verifica anche la whitelist admin. Gli avvisi del linter su funzioni SECURITY DEFINER vanno interpretati alla luce di questi vincoli e ri-verificati.</li>
+<li>La lettura della guida ospite è l'unica eccezione pubblica: funziona solo con un link valido e va ricontrollata a ogni modifica.</li>
+<li>Il contatore d'uso dell'assistente non è leggibile dal browser. Le regole di accesso vanno ri-verificate dopo ogni modifica al database.</li>
 <li>Non è presente un sistema automatico di cancellazione di contatti, backup applicativo controllato, recupero dati verificato o registro di incidenti: richiedono procedura organizzativa prima dell'ingresso di dati reali.</li>
 </ul>
 </section>
@@ -85,7 +85,7 @@ code{overflow-wrap:anywhere;background:#eef4ef;padding:1px 4px;border-radius:4px
 <li><strong>Demo pubblica:</strong> appartamento inventato e calendario di prova senza dati reali, messaggi o prenotazioni. L'assistente demo è a regole fisse, non IA.</li>
 <li><strong>Concierge privato:</strong> per ogni immobile registrato conserva manualmente orari, parcheggio, nome rete Wi-Fi, regole, rifiuti e istruzioni di assistenza. Possibilità di anteprima e pubblicazione volontaria della guida via link.</li>
 <li><strong>Radar privato:</strong> calendario manuale 28 giorni, tariffa e percentuale ipotetica. La proiezione è una simulazione e non una previsione statistica, né deriva automaticamente dai portali.</li>
-<li><strong>Claude:</strong> pulsanti UI presenti; Edge Function Supabase distribuita con controllo autenticazione, whitelist admin e quota iniziale di 12 richieste per amministratore e giorno UTC. Chiamate Anthropic disabilitate fino alla configurazione volontaria di <code>ANTHROPIC_API_KEY</code> e <code>HDL_AI_ENABLED=true</code>.</li>
+<li><strong>Claude:</strong> pulsanti presenti nel gestionale; la funzione server esiste ma è <strong>spenta</strong>. Si attiva solo con autorizzazione esplicita del titolare. Ogni testo prodotto è solo una bozza.</li>
 <li>Il codice Claude è versionato nel repository, ma una modifica a GitHub non distribuisce automaticamente la funzione Supabase. Testare il server e i controlli dopo ogni nuova versione.</li>
 <li>Prima di attivare Claude con contenuti reali occorrono verifiche privacy, autorizzazioni dei proprietari, minimizzazione e collaudi anti-invenzione. Nessun chatbot invia automaticamente risposte agli ospiti né cambia i prezzi.</li>
 </ul>
@@ -108,7 +108,7 @@ code{overflow-wrap:anywhere;background:#eef4ef;padding:1px 4px;border-radius:4px
 <li>Completare Impressum e privacy con dati aziendali reali e validazione professionale.</li>
 <li>Verificare apertura e posizione fiscale effettiva tra Germania e Italia, inclusi IVA e fatturazione.</li>
 <li>Validare contratto e allegati, ruoli GDPR, deleghe ai portali, limiti sui prezzi e responsabilità delle emergenze.</li>
-<li>Abilitare protezione password compromesse in Supabase e valutare MFA per l'account amministratore.</li>
+<li>Completare le impostazioni di sicurezza dell'accesso amministratore (checklist privata).</li>
 <li>Stabilire procedure di backup/ripristino, esportazione, cancellazione dati, conservazione e gestione incidenti.</li>
 <li>Provare davvero tutti i flussi con dati legittimi: contatto → cliente → immobile → guida → calendario → compenso → rendiconto.</li>
 <li>Attivare Claude solo con controlli su budget, sicurezza e minimizzazione; testare le risposte e l'avviso «dato non disponibile».</li>
