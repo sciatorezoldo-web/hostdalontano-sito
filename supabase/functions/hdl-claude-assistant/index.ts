@@ -3,7 +3,7 @@
 // Authentication is checked in this function (verify_jwt=false for publishable-key projects).
 const BASE = Deno.env.get("SUPABASE_URL") || "https://kgbkevncksvpfgqsvoqg.supabase.co";
 const PUBLIC_KEY = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX";
-const MODEL = Deno.env.get("HDL_CLAUDE_MODEL") || "claude-haiku-4-5-20251001";
+const MODEL = Deno.env.get("HDL_CLAUDE_MODEL") || "claude-haiku-5-5";
 const ORIGINS = new Set(["https://hostdalontano.com", "https://www.hostdalontano.com"]);
 const MAX_LENGTH = 1200;
 function json(data: unknown, status = 200, origin = "https://hostdalontano.com"): Response {
@@ -69,8 +69,12 @@ Deno.serve(async (req: Request) => {
     if (Deno.env.get("HDL_AI_ENABLED") !== "true" || !Deno.env.get("ANTHROPIC_API_KEY")) {
       return json({ error: "Claude non è ancora attivo. Configura la chiave API nei Secrets di Supabase e abilita HDL_AI_ENABLED." }, 503, responseOrigin);
     }
-    const input = await req.json().catch(() => null);
-    const mode = input?.mode;
+    // The content-length header can be missing (chunked body): check the real size too.
+    const raw = await req.text().catch(() => "");
+    if (raw.length > 12000) return json({ error: "Richiesta troppo grande." }, 413, responseOrigin);
+    let input: { mode?: unknown; property_id?: unknown; question?: unknown; language?: unknown } | null = null;
+    try { input = JSON.parse(raw); } catch { input = null; }
+    const mode = typeof input?.mode === "string" ? input.mode : "";
     const propertyId = safeText(input?.property_id, 64);
     const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!["concierge", "radar"].includes(mode) || !uuid.test(propertyId)) {
@@ -137,7 +141,9 @@ Deno.serve(async (req: Request) => {
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        model: MODEL, max_tokens: 750, temperature: 0.2, system,
+        // Haiku 5.5: temperature non predefinita = errore 400; il ragionamento interno è attivo e consuma max_tokens,
+        // quindi sforzo basso e margine di token sufficiente per il testo finale.
+        model: MODEL, max_tokens: 4000, output_config: { effort: "low" }, system,
         messages: [{ role: "user", content: prompt }],
       }),
       signal: AbortSignal.timeout(20000),
@@ -147,6 +153,7 @@ Deno.serve(async (req: Request) => {
       return json({ error: api.status === 429 ? "Claude è temporaneamente sovraccarico. Riprova più tardi." : "Claude non è disponibile o la configurazione API va verificata." }, 502, responseOrigin);
     }
     const output = await api.json();
+    if (output?.stop_reason === "refusal") return json({ error: "Claude ha rifiutato questa richiesta. Riformula la domanda." }, 422, responseOrigin);
     const answer = Array.isArray(output.content) ? output.content.filter((x:unknown) => typeof x === "object" && x !== null && (x as {type?:string}).type === "text").map((x:{text?:string}) => x.text || "").join("\n").trim() : "";
     if (!answer) return json({ error: "Claude non ha prodotto una risposta." }, 502, responseOrigin);
     return json({ answer: answer.slice(0, 9000), mode, model: MODEL, notice: "Bozza da verificare. Nessun messaggio inviato e nessun prezzo modificato." }, 200, responseOrigin);
