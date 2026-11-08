@@ -2,17 +2,33 @@
 if(window.top!==window.self){document.documentElement.textContent='';try{window.top.location.href=window.self.location.href}catch(e){}return}
 const BASE='https://kgbkevncksvpfgqsvoqg.supabase.co';
 const KEY='sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX';
-let bearer=null,clients=[],properties=[],fees=[],leads=[],propertyTools=[],guestShares=[],selectedOccupied=new Set();
+let bearer=null,refreshToken=null,expiresAt=0,renewing=null,toolsDirty=false,clients=[],properties=[],fees=[],leads=[],propertyTools=[],guestShares=[],selectedOccupied=new Set();
 const el=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(Number(n)||0);
 const status=(msg,type='')=>{el('status').textContent=msg;el('status').dataset.type=type};
 const euroValue=s=>Number(String(s).replace(',','.'));
-async function call(path,{method='GET',body,prefer}={}){
+// Rinnovo della sessione: i token restano solo in memoria; un'unica richiesta di rinnovo alla volta, perché Supabase ruota i refresh token.
+function storeSession(data){bearer=data.access_token;refreshToken=data.refresh_token||null;expiresAt=Date.now()+(Number(data.expires_in)||3600)*1000}
+function renewSession(){
+ if(!refreshToken)return Promise.resolve(false);
+ if(!renewing)renewing=(async()=>{
+  try{
+   const res=await fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:KEY,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:refreshToken}),cache:'no-store'});
+   const data=await res.json().catch(()=>null);
+   if(!res.ok||!data?.access_token)return false;
+   storeSession(data);return true;
+  }catch{return false}
+ })().finally(()=>{renewing=null});
+ return renewing;
+}
+async function ensureFreshSession(){if(bearer&&refreshToken&&Date.now()>expiresAt-120000)await renewSession()}
+async function call(path,{method='GET',body,prefer}={},retried=false){
+ await ensureFreshSession();
  const h={'apikey':KEY,'Content-Type':'application/json',...(bearer?{'Authorization':'Bearer '+bearer}:{})};
  if(method!=='GET')h.Prefer=prefer||'return=representation';
  const res=await fetch(BASE+path,{method,headers:h,body:body===undefined?undefined:JSON.stringify(body),cache:'no-store'});
  const data=await res.json().catch(()=>null);
- if(!res.ok){if(res.status===401&&bearer){logout('Sessione scaduta: accedi di nuovo.');throw Error('Sessione scaduta: accedi di nuovo.')}throw Error(data?.message||data?.msg||data?.error_description||data?.error||'Errore HTTP '+res.status)}
+ if(!res.ok){if(res.status===401&&bearer&&!retried&&await renewSession())return call(path,{method,body,prefer},true);if(res.status===401&&bearer){logout('Sessione scaduta: accedi di nuovo.');throw Error('Sessione scaduta: accedi di nuovo.')}throw Error(data?.message||data?.msg||data?.error_description||data?.error||'Errore HTTP '+res.status)}
  return data;
 }
 function addCell(row,value){const td=document.createElement('td');td.textContent=String(value??'—');row.append(td)}
@@ -21,7 +37,7 @@ function empty(tbody,columns){const tr=document.createElement('tr'),td=document.
 function option(select,value,label){let o=document.createElement('option');o.value=value;o.textContent=label;select.append(o)}
 function formData(form){return Object.fromEntries(new FormData(form).entries())}
 function setVisible(yes){el('signInBox').hidden=yes;el('adminBox').hidden=!yes}
-function logout(message='Sessione terminata.'){const token=bearer;bearer=null;clients=[];properties=[];fees=[];leads=[];propertyTools=[];guestShares=[];selectedOccupied=new Set();el('password').value='';el('aiQuestion').value='';el('aiText').textContent='';el('aiResult').hidden=true;el('draftRecipient').value='';el('draftSubject').value='';el('draftBody').value='';el('emailPanel').hidden=true;el('shareUrl').value='';el('guidePreview').hidden=true;
+function logout(message='Sessione terminata.'){const token=bearer;bearer=null;refreshToken=null;expiresAt=0;toolsDirty=false;clients=[];properties=[];fees=[];leads=[];propertyTools=[];guestShares=[];selectedOccupied=new Set();el('password').value='';el('aiQuestion').value='';el('aiText').textContent='';el('aiResult').hidden=true;el('draftRecipient').value='';el('draftSubject').value='';el('draftBody').value='';el('emailPanel').hidden=true;el('shareUrl').value='';el('guidePreview').hidden=true;
  // Clear private data from the DOM, not just from the in-memory arrays.
  const admin=el('adminBox');
  admin.querySelectorAll('tbody').forEach(node=>node.replaceChildren());
@@ -42,6 +58,8 @@ async function refresh(){
  call('/rest/v1/hdl_property_tools?select=property_id,checkin_time,checkout_time,parking,wifi_name,house_rules,waste_info,assistance_info,nightly_rate,sale_probability,occupied_dates&limit=500'),
  call('/rest/v1/hdl_guest_shares?select=property_id,share_token,is_published&limit=500')]);
  render();
+ const full=[[clients,500,'clienti'],[properties,500,'immobili'],[fees,1000,'compensi'],[leads,500,'contatti']].filter(([list,max])=>list.length>=max).map(([,max,name])=>name+' (max '+max+')');
+ if(full.length)status('Attenzione: è stato raggiunto il limite di righe caricate per '+full.join(', ')+'. Alcuni dati potrebbero non essere mostrati.','error');
 }
 function chartNode(tag,cls,textValue){
  const node=document.createElement(tag);
@@ -149,7 +167,7 @@ function render(){
  for(const c of clients)option(owner,c.id,c.full_name);
  for(const p of properties){const label=p.name+' · '+(clients.find(c=>c.id===p.client_id)?.full_name||'Cliente');option(prop,p.id,label);option(toolSelect,p.id,label)}
  if(properties.some(p=>p.id===toolId))toolSelect.value=toolId;
- if(el('toolsPanel').hidden===false)loadPropertyTools();
+ if(el('toolsPanel').hidden===false&&!toolsDirty)loadPropertyTools();
  const ct=el('clientsRows');ct.replaceChildren();
  for(const c of clients){const tr=document.createElement('tr');addCell(tr,c.full_name);addCell(tr,c.email||'—');addCell(tr,c.status);addButton(tr,'Modifica',()=>editClient(c));ct.append(tr)}if(!clients.length)empty(ct,4);
  const pt=el('propertiesRows');pt.replaceChildren();
@@ -240,7 +258,7 @@ el('loginForm').addEventListener('submit',async event=>{
  try{
   const email=el('email').value.trim(),password=el('password').value;
   const login=await call('/auth/v1/token?grant_type=password',{method:'POST',body:{email,password}});
-  bearer=login.access_token;el('password').value='';
+  storeSession(login);el('password').value='';
   const approved=await call('/rest/v1/hdl_admin_accounts?select=user_id&limit=1');
   if(!approved.length){logout('Account verificato ma non ancora autorizzato al gestionale.');return}
   setVisible(true);el('who').textContent=login.user?.email||email;
@@ -353,6 +371,7 @@ async function runClaude(mode){
  el('aiStatus').textContent='Controllo accesso e collegamento Claude…';
  el('aiConcierge').disabled=true;el('aiRadar').disabled=true;
  try{
+  await ensureFreshSession();
   const response=await fetch(BASE+'/functions/v1/hdl-claude-assistant',{
    method:'POST',
    headers:{'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+bearer},
@@ -378,6 +397,7 @@ el('aiCopy').addEventListener('click',async()=>{
 });
 
 function loadPropertyTools(){
+ toolsDirty=false;
  clearAiDraft();
  el('guidePreview').hidden=true;
  updateShareView();
@@ -427,7 +447,7 @@ function renderPrivateCalendar(){
   b.append(short,num);
   b.setAttribute('aria-pressed',String(selectedOccupied.has(key)));
   b.setAttribute('aria-label',labelFormat.format(d)+' · '+(selectedOccupied.has(key)?'occupato':'libero'));
-  b.addEventListener('click',()=>{if(selectedOccupied.has(key))selectedOccupied.delete(key);else selectedOccupied.add(key);renderPrivateCalendar()});
+  b.addEventListener('click',()=>{if(selectedOccupied.has(key))selectedOccupied.delete(key);else selectedOccupied.add(key);toolsDirty=true;renderPrivateCalendar()});
   calendar.append(b);
  }
  const occupied=dates.filter(d=>selectedOccupied.has(localDate(d))).length,free=28-occupied;
@@ -501,6 +521,9 @@ el('copyShare').addEventListener('click',async()=>{
 el('openShare').addEventListener('click',()=>{const url=el('shareUrl').value;if(url)window.open(url,'_blank','noopener,noreferrer')});
 
 el('toolsProperty').addEventListener('change',loadPropertyTools);
+el('toolsForm').addEventListener('input',event=>{if(!event.target.closest('#sharePanel')&&event.target.id!=='aiQuestion'&&event.target.id!=='aiLanguage')toolsDirty=true});
+// Invio in un campo di testo non deve salvare la scheda per errore (il modulo contiene anche link e sezione Claude).
+el('toolsForm').addEventListener('keydown',event=>{if(event.key==='Enter'&&event.target.tagName==='INPUT')event.preventDefault()});
 el('toolRate').addEventListener('input',renderPrivateCalendar);
 el('toolConversion').addEventListener('input',renderPrivateCalendar);
 el('resetTools').addEventListener('click',loadPropertyTools);
@@ -520,7 +543,7 @@ el('toolsForm').addEventListener('submit',async event=>{
  try{
   const saved=await call('/rest/v1/hdl_property_tools?on_conflict=property_id',{method:'POST',body:payload,prefer:'resolution=merge-duplicates,return=representation'});
   if(!Array.isArray(saved)||saved.length!==1)throw Error('Il database non ha confermato le impostazioni.');
-  await refresh();el('toolsProperty').value=id;loadPropertyTools();status('Concierge e Radar salvati per questo immobile.','ok');
+  toolsDirty=false;await refresh();el('toolsProperty').value=id;loadPropertyTools();status('Concierge e Radar salvati per questo immobile.','ok');
  }catch(error){status('Errore salvataggio strumenti: '+error.message,'error')}
  finally{btn.disabled=false}
 });

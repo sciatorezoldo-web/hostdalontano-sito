@@ -17,6 +17,9 @@
 <meta name="theme-color" content="#FFFFFF">
 <title>Host da Lontano – Gestione online di case vacanza in tutta Italia</title>
 <link rel="canonical" href="https://hostdalontano.com/">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"ProfessionalService","name":"Host da Lontano","url":"https://hostdalontano.com/","image":"https://hostdalontano.com/og.png","logo":"https://hostdalontano.com/hdl-logo-orizzontale.png","email":"giuseppe@hostdalontano.com","description":"Gestione online di case vacanza in tutta Italia: annunci, prezzi, messaggi agli ospiti e recensioni su Airbnb, Booking e altri canali.","areaServed":{"@type":"Country","name":"Italia"},"availableLanguage":["it","en","de"],"founder":{"@type":"Person","name":"Giuseppe Cona"}}
+</script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'><path d='M14 50 L60 14 L106 50' fill='none' stroke='%23B9862F' stroke-width='8' stroke-linecap='round' stroke-linejoin='round'/><path d='M30 50 V100 M30 75 H58 M58 50 V100' stroke='%232C6650' stroke-width='9' stroke-linecap='round' fill='none'/><path d='M74 50 V100 H96' stroke='%232C6650' stroke-width='9' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
 <style>
 /* Stile professionale: sempre bianco, tipografia sans pulita, verde scuro come colore del marchio, ottone solo come dettaglio. */
@@ -277,7 +280,7 @@ input,textarea,select{max-width:100%}
         <div class="err"><span class="label">Errore 3</span><h3>Una descrizione che elenca</h3><p>"Due camere, una cucina, un bagno" non convince nessuno. Serve dire perché scegliere proprio la tua casa.</p></div>
         <div class="err"><span class="label">Errore 4</span><h3>Lo stesso prezzo tutto l'anno</h3><p>Un sabato di agosto e un martedì di novembre non valgono lo stesso. Con un prezzo fisso perdi soldi in estate e resti vuoto in inverno.</p></div>
         <div class="err"><span class="label">Errore 5</span><h3>Risposte lente</h3><p>Chi chiede informazioni scrive a più case insieme. Di solito prenota da chi risponde per primo.</p></div>
-        <div class="err"><span class="label">Errore 6</span><h3>Commissioni non aggiornate</h3><p>Airbnb ha introdotto nel 2026 la struttura a commissione unica per molti host: spesso il 15,5%, con eccezioni. La tariffa effettiva va verificata nel proprio account e nelle singole prenotazioni.</p></div>
+        <div class="err"><span class="label">Errore 6</span><h3>Commissioni non aggiornate</h3><p>Da fine 2025 Airbnb sta passando molti host alla commissione unica a carico dell’host: spesso il 15,5%, con eccezioni. La tariffa effettiva va verificata nel proprio account e nelle singole prenotazioni.</p></div>
       </div>
     </div>
   </section>
@@ -484,13 +487,15 @@ input,textarea,select{max-width:100%}
           <textarea id="f-note" name="note" maxlength="2000" placeholder="Es. la casa non è ancora online, vivo a Milano…"></textarea>
         </label>
         <button class="btn btn-primary" type="submit">Prepara l'email per l'analisi</button>
-        <p class="hero-note" style="margin-top:10px">Il modulo prepara un messaggio sul tuo dispositivo, senza trasmettere dati al sito. Controlla l’email prima di premere «Invia» nella tua app di posta. Consulta anche l’<a href="privacy.html">informativa privacy</a>.</p>
+        <p class="hero-note" style="margin-top:10px">Il modulo prepara un messaggio sul tuo dispositivo, senza trasmettere dati al sito; se scegli Gmail o Outlook.com, il testo viene aperto nel servizio di posta che hai scelto. Controlla l’email prima di premere «Invia» nella tua app di posta. Consulta anche l’<a href="privacy.html">informativa privacy</a>.</p>
         <p class="status" id="f-status" role="status" aria-live="polite"></p>
         <div class="out" id="out" hidden>
           <span class="label">Il tuo messaggio</span>
           <pre id="out-text"></pre>
           <div class="out-actions">
             <a class="btn btn-primary" id="out-mail" href="#">Apri l'email</a>
+            <a class="btn btn-ghost" id="out-gmail" href="#" target="_blank" rel="noopener noreferrer">Invia con Gmail</a>
+            <a class="btn btn-ghost" id="out-outlook" href="#" target="_blank" rel="noopener noreferrer">Invia con Outlook.com</a>
             <button class="btn btn-ghost" type="button" id="out-copy">Copia il testo</button>
           </div>
         </div>
@@ -509,11 +514,19 @@ input,textarea,select{max-width:100%}
 <script>
 (function(){
   var EMAIL = "giuseppe@hostdalontano.com"; // indirizzo email del servizio
+  // Salvataggio diretto nel gestionale: lasciare false finché non è stata eseguita
+  // supabase/proposte/salva-richieste-sito.sql e aggiornata la privacy.
+  var SAVE_LEADS = false;
+  var LEAD_API = "https://kgbkevncksvpfgqsvoqg.supabase.co/rest/v1/rpc/hdl_submit_lead";
+  var LEAD_KEY = "sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX";
+  var savedSignature = "";
   var form = document.getElementById("audit-form");
   var status = document.getElementById("f-status");
   var out = document.getElementById("out");
   var outText = document.getElementById("out-text");
   var outMail = document.getElementById("out-mail");
+  var outGmail = document.getElementById("out-gmail");
+  var outOutlook = document.getElementById("out-outlook");
   var copyBtn = document.getElementById("out-copy");
 
   form.addEventListener("submit", function(e){
@@ -552,10 +565,35 @@ input,textarea,select{max-width:100%}
     if(replyEmail) msg += "\nEmail a cui rispondermi: " + replyEmail;
     msg += "\n\nGrazie!";
     outText.textContent = msg;
-    outMail.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent("Analisi gratuita: casa a " + city) + "&body=" + encodeURIComponent(msg);
+    var subject = "Analisi gratuita: casa a " + city;
+    outMail.href = "mailto:" + EMAIL + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(msg);
+    // Alternative per chi usa la posta dal browser e non ha un programma email configurato.
+    outGmail.href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(EMAIL) + "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(msg);
+    outOutlook.href = "https://outlook.live.com/mail/0/deeplink/compose?to=" + encodeURIComponent(EMAIL) + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(msg);
     out.hidden = false;
-    status.textContent = "Email pronta ma non ancora inviata. Premi «Apri l'email», poi inviala dal tuo programma di posta. Se non si apre, copia il testo e mandalo a " + EMAIL + ".";
+    if (SAVE_LEADS) { saveLead(name, city, replyEmail, link, note); return; }
+    status.textContent = "Email pronta ma non ancora inviata. Premi «Apri l'email» oppure, se usi la posta dal browser, «Invia con Gmail» o «Invia con Outlook.com». In alternativa copia il testo e mandalo a " + EMAIL + ".";
   });
+
+  function saveLead(name, city, replyEmail, link, note){
+    var signature = [name, city, replyEmail, link, note].join("\u0001");
+    if (signature === savedSignature) { status.textContent = "Richiesta già ricevuta. Ti risponderò via email."; return; }
+    status.textContent = "Invio della richiesta in corso…";
+    fetch(LEAD_API, {
+      method: "POST",
+      headers: { "apikey": LEAD_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_name: name, p_location: city, p_email: replyEmail || null, p_link: link || null, p_note: note || null }),
+      cache: "no-store"
+    }).then(function(res){
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      savedSignature = signature;
+      status.textContent = replyEmail
+        ? "Richiesta ricevuta. Ti risponderò all'indirizzo " + replyEmail + ". Se preferisci, puoi anche inviarmi l'email qui sotto."
+        : "Richiesta ricevuta. Senza un'email non posso risponderti: invia anche il messaggio qui sotto dal tuo programma di posta.";
+    }).catch(function(){
+      status.textContent = "Non sono riuscito a registrare la richiesta. Invia l'email qui sotto oppure scrivimi a " + EMAIL + ".";
+    });
+  }
 
   // Chiude il menu mobile dopo la scelta di una sezione.
   var mobileMenu=document.querySelector(".mobile-nav");

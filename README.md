@@ -9,6 +9,10 @@ Nessuna build: GitHub Pages pubblica i file così come sono.
   - Le pagine del gestionale e della guida non funzionano se inserite dentro un altro sito (protezione contro il clickjacking).
 - Guida ospiti: `strumenti/guida.html` + `strumenti/guida.js` (nessuno script inline, CSP senza `unsafe-inline`).
 - Guida per gli ospiti: `strumenti/guida.html` (legge solo le guide pubblicate, tramite link revocabile).
-- Funzione server per Claude: `supabase/functions/hdl-claude-assistant/` (spenta finché non viene autorizzata).
+- Funzione server per Claude: `supabase/functions/hdl-claude-assistant/` (spenta finché non viene autorizzata). Dopo ogni modifica va ridistribuita: `supabase functions deploy hdl-claude-assistant --no-verify-jwt`.
+- Controllo sicurezza del database: `supabase/verifica-sicurezza.sql` (solo lettura, da eseguire nel SQL Editor di Supabase).
+- Proposta (spenta): salvare le richieste del modulo nel gestionale. Istruzioni e SQL in `supabase/proposte/salva-richieste-sito.sql`; si attiva con `SAVE_LEADS = true` in `index.html`.
 
 Il repository è pubblico: non inserire mai chiavi segrete, password o dati di clienti nei file.
+
+Quando modifichi `strumenti/gestionale-app.js`, aumenta il numero `?v=` in `strumenti/accesso.html` per evitare che i browser usino la versione vecchia.
