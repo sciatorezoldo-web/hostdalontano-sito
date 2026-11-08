@@ -507,6 +507,12 @@ input,textarea,select{max-width:100%}
 <script>
 (function(){
   var EMAIL = "giuseppe@hostdalontano.com"; // indirizzo email del servizio
+  // Salvataggio diretto nel gestionale: lasciare false finché non è stata eseguita
+  // supabase/proposte/salva-richieste-sito.sql e aggiornata la privacy.
+  var SAVE_LEADS = false;
+  var LEAD_API = "https://kgbkevncksvpfgqsvoqg.supabase.co/rest/v1/rpc/hdl_submit_lead";
+  var LEAD_KEY = "sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX";
+  var savedSignature = "";
   var form = document.getElementById("audit-form");
   var status = document.getElementById("f-status");
   var out = document.getElementById("out");
@@ -558,8 +564,29 @@ input,textarea,select{max-width:100%}
     outGmail.href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(EMAIL) + "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(msg);
     outOutlook.href = "https://outlook.live.com/mail/0/deeplink/compose?to=" + encodeURIComponent(EMAIL) + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(msg);
     out.hidden = false;
+    if (SAVE_LEADS) { saveLead(name, city, replyEmail, link, note); return; }
     status.textContent = "Email pronta ma non ancora inviata. Premi «Apri l'email» oppure, se usi la posta dal browser, «Invia con Gmail» o «Invia con Outlook.com». In alternativa copia il testo e mandalo a " + EMAIL + ".";
   });
+
+  function saveLead(name, city, replyEmail, link, note){
+    var signature = [name, city, replyEmail, link, note].join("\u0001");
+    if (signature === savedSignature) { status.textContent = "Richiesta già ricevuta. Ti risponderò via email."; return; }
+    status.textContent = "Invio della richiesta in corso…";
+    fetch(LEAD_API, {
+      method: "POST",
+      headers: { "apikey": LEAD_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_name: name, p_location: city, p_email: replyEmail || null, p_link: link || null, p_note: note || null }),
+      cache: "no-store"
+    }).then(function(res){
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      savedSignature = signature;
+      status.textContent = replyEmail
+        ? "Richiesta ricevuta. Ti risponderò all'indirizzo " + replyEmail + ". Se preferisci, puoi anche inviarmi l'email qui sotto."
+        : "Richiesta ricevuta. Senza un'email non posso risponderti: invia anche il messaggio qui sotto dal tuo programma di posta.";
+    }).catch(function(){
+      status.textContent = "Non sono riuscito a registrare la richiesta. Invia l'email qui sotto oppure scrivimi a " + EMAIL + ".";
+    });
+  }
 
   // Chiude il menu mobile dopo la scelta di una sezione.
   var mobileMenu=document.querySelector(".mobile-nav");
