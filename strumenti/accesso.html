@@ -88,6 +88,11 @@ html{scroll-behavior:smooth}body{overflow-x:hidden}main,header,.card,.metric,.wo
 <label for="toolWaste">Rifiuti e raccolta differenziata</label><textarea id="toolWaste" maxlength="2000"></textarea>
 <label for="toolHelp">Assistenza ospiti (senza codici di accesso)</label><textarea id="toolHelp" maxlength="2000"></textarea>
 <div class="split"><div><label for="toolRate">Tariffa ipotetica a notte (€)</label><input id="toolRate" type="number" min="0" max="10000" step=".01" value="130" required></div><div><label for="toolConversion">Notti libere che ipotizzi di vendere (%)</label><input id="toolConversion" type="number" min="0" max="100" step="1" value="25" required></div></div>
+<div id="icalBox" hidden><h3 style="margin-top:20px">Calendari dei portali</h3><p class="muted" style="font-size:12px">Incolla il link iCal (.ics) di esportazione del calendario. Su Airbnb: Calendario → Disponibilità → Collega calendari → Esporta. Su Booking: Tariffe e disponibilità → Sincronizza calendari → Esporta. Il gestionale legge solo le date occupate: non modifica nulla sui portali.</p>
+<label for="toolIcalAirbnb">Link calendario Airbnb (iCal)</label><input id="toolIcalAirbnb" type="url" inputmode="url" maxlength="1000" placeholder="https://www.airbnb.it/calendar/ical/….ics?s=…" autocomplete="off">
+<label for="toolIcalBooking">Link calendario Booking (iCal)</label><input id="toolIcalBooking" type="url" inputmode="url" maxlength="1000" placeholder="https://ical.booking.com/v1/export?t=…" autocomplete="off">
+<div class="actions"><button class="secondary" id="icalSync" type="button">Aggiorna da Airbnb e Booking</button></div></div>
+<p class="muted" id="icalStatus" role="status" aria-live="polite" style="font-size:12px"></p>
 <h3 style="margin-top:20px">Radar · Prossimi 28 giorni</h3><p class="muted" style="font-size:12px">Tocca le date per alternare libero/occupato. Le modifiche vengono salvate solo con il pulsante qui sotto.</p>
 <div id="toolsCalendar" class="days privateCalendar" role="group" aria-label="Calendario privato 28 giorni"></div>
 <p class="muted" id="toolsRadarSummary" aria-live="polite"></p>
@@ -105,5 +110,5 @@ html{scroll-behavior:smooth}body{overflow-x:hidden}main,header,.card,.metric,.wo
 <div class="warning">Questo gestionale registra dati inseriti manualmente. Non sostituisce la contabilità fiscale e non verifica gli incassi bancari.</div>
 </section>
 </main><footer>Host da Lontano · Area di accesso pubblica; dati privati protetti tramite autenticazione e regole del database.</footer>
-<script src="gestionale-app.js?v=17" defer></script>
+<script src="gestionale-app.js?v=18" defer></script>
 </body></html>

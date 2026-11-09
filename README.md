@@ -10,6 +10,7 @@ Nessuna build: GitHub Pages pubblica i file così come sono.
 - Guida ospiti: `strumenti/guida.html` + `strumenti/guida.js` (nessuno script inline, CSP senza `unsafe-inline`).
 - Guida per gli ospiti: `strumenti/guida.html` (legge solo le guide pubblicate, tramite link revocabile).
 - Funzione server per Claude: `supabase/functions/hdl-claude-assistant/` (spenta finché non viene autorizzata). Dopo ogni modifica va ridistribuita: `supabase functions deploy hdl-claude-assistant --no-verify-jwt`.
+- Radar collegato ai calendari Airbnb e Booking (iCal, sola lettura): funzione `supabase/functions/hdl-ical-sync/` (da pubblicare con verify JWT disattivato, come l'altra) e colonne create da `supabase/proposte/radar-calendari-ical.sql`. Finché il file SQL non è eseguito, il gestionale nasconde i campi dei calendari. L'aggiornamento sostituisce le date dei 28 giorni con quelle dei portali; va poi salvato.
 - Controllo sicurezza del database: `supabase/verifica-sicurezza.sql` (solo lettura, da eseguire nel SQL Editor di Supabase).
 - Proposta (spenta): salvare le richieste del modulo nel gestionale. Istruzioni e SQL in `supabase/proposte/salva-richieste-sito.sql`; si attiva con `SAVE_LEADS = true` in `index.html`.
 

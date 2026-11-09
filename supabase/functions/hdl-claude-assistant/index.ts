@@ -3,7 +3,7 @@
 // Authentication is checked in this function (verify_jwt=false for publishable-key projects).
 const BASE = Deno.env.get("SUPABASE_URL") || "https://kgbkevncksvpfgqsvoqg.supabase.co";
 const PUBLIC_KEY = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") || "sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX";
-const MODEL = Deno.env.get("HDL_CLAUDE_MODEL") || "claude-haiku-5-5";
+const MODEL = Deno.env.get("HDL_CLAUDE_MODEL") || "claude-haiku-4-5-20251001";
 const ORIGINS = new Set(["https://hostdalontano.com", "https://www.hostdalontano.com"]);
 const MAX_LENGTH = 1200;
 function json(data: unknown, status = 200, origin = "https://hostdalontano.com"): Response {

@@ -2,7 +2,7 @@
 if(window.top!==window.self){document.documentElement.textContent='';try{window.top.location.href=window.self.location.href}catch(e){}return}
 const BASE='https://kgbkevncksvpfgqsvoqg.supabase.co';
 const KEY='sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX';
-let bearer=null,refreshToken=null,expiresAt=0,renewing=null,toolsDirty=false,clients=[],properties=[],fees=[],leads=[],propertyTools=[],guestShares=[],selectedOccupied=new Set();
+let icalReady=false,bearer=null,refreshToken=null,expiresAt=0,renewing=null,toolsDirty=false,clients=[],properties=[],fees=[],leads=[],propertyTools=[],guestShares=[],selectedOccupied=new Set();
 const el=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(Number(n)||0);
 const status=(msg,type='')=>{el('status').textContent=msg;el('status').dataset.type=type};
@@ -37,7 +37,7 @@ function empty(tbody,columns){const tr=document.createElement('tr'),td=document.
 function option(select,value,label){let o=document.createElement('option');o.value=value;o.textContent=label;select.append(o)}
 function formData(form){return Object.fromEntries(new FormData(form).entries())}
 function setVisible(yes){el('signInBox').hidden=yes;el('adminBox').hidden=!yes}
-function logout(message='Sessione terminata.'){const token=bearer;bearer=null;refreshToken=null;expiresAt=0;toolsDirty=false;clients=[];properties=[];fees=[];leads=[];propertyTools=[];guestShares=[];selectedOccupied=new Set();el('password').value='';el('aiQuestion').value='';el('aiText').textContent='';el('aiResult').hidden=true;el('draftRecipient').value='';el('draftSubject').value='';el('draftBody').value='';el('emailPanel').hidden=true;el('shareUrl').value='';el('guidePreview').hidden=true;
+function logout(message='Sessione terminata.'){const token=bearer;bearer=null;refreshToken=null;expiresAt=0;toolsDirty=false;clients=[];properties=[];fees=[];leads=[];propertyTools=[];guestShares=[];selectedOccupied=new Set();el('password').value='';el('aiQuestion').value='';el('aiText').textContent='';el('aiResult').hidden=true;el('draftRecipient').value='';el('draftSubject').value='';el('draftBody').value='';el('emailPanel').hidden=true;el('shareUrl').value='';el('guidePreview').hidden=true;el('toolIcalAirbnb').value='';el('toolIcalBooking').value='';el('icalStatus').textContent='';el('icalBox').hidden=true;icalReady=false;
  // Clear private data from the DOM, not just from the in-memory arrays.
  const admin=el('adminBox');
  admin.querySelectorAll('tbody').forEach(node=>node.replaceChildren());
@@ -49,13 +49,46 @@ function logout(message='Sessione terminata.'){const token=bearer;bearer=null;re
  el('totalFees').textContent='—';el('pendingFees').textContent='—';
  el('clientsCount').textContent='—';el('propertiesCount').textContent='—';el('leadsCount').textContent='—';el('dueCount').textContent='—';
  setVisible(false);el('loginMessage').textContent=message;if(token)fetch(BASE+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+token}}).catch(()=>{})}
+// The iCal columns exist only after supabase/proposte/radar-calendari-ical.sql has been run.
+const TOOLS_COLUMNS='property_id,checkin_time,checkout_time,parking,wifi_name,house_rules,waste_info,assistance_info,nightly_rate,sale_probability,occupied_dates';
+async function loadToolsRows(){
+ try{const rows=await call('/rest/v1/hdl_property_tools?select='+TOOLS_COLUMNS+',ical_airbnb,ical_booking&limit=500');icalReady=true;return rows}
+ catch(error){if(!bearer)throw error;icalReady=false;return call('/rest/v1/hdl_property_tools?select='+TOOLS_COLUMNS+'&limit=500')}
+}
+const ICAL_RULES={airbnb:/^https:\/\/(www\.)?airbnb\.[a-z.]{2,8}\//i,booking:/^https:\/\/([a-z0-9-]+\.)*booking\.com\//i};
+function icalValue(id,source){const v=el(id).value.trim();if(!v)return null;if(v.length>1000||!ICAL_RULES[source].test(v))throw Error('Il link calendario '+(source==='airbnb'?'Airbnb':'Booking')+' non sembra corretto: copia il link iCal (.ics) dal portale.');return v}
+async function syncCalendars(){
+ const id=el('toolsProperty').value,btn=el('icalSync'),out=el('icalStatus');
+ if(!icalReady){out.textContent='Prima esegui il file SQL dei calendari in Supabase.';return}
+ if(!properties.some(x=>x.id===id)){out.textContent='Seleziona un immobile.';return}
+ const saved=propertyTools.find(x=>x.property_id===id)||{};
+ if((saved.ical_airbnb||'')!==el('toolIcalAirbnb').value.trim()||(saved.ical_booking||'')!==el('toolIcalBooking').value.trim()){out.textContent='Salva prima i link dei calendari con «Salva Concierge e Radar».';return}
+ if(!saved.ical_airbnb&&!saved.ical_booking){out.textContent='Inserisci e salva almeno un link calendario.';return}
+ btn.disabled=true;out.textContent='Lettura dei calendari in corso…';
+ try{
+  await ensureFreshSession();
+  const response=await fetch(BASE+'/functions/v1/hdl-ical-sync',{method:'POST',headers:{'Content-Type':'application/json',apikey:KEY,Authorization:'Bearer '+bearer},body:JSON.stringify({property_id:id}),cache:'no-store'});
+  const data=await response.json().catch(()=>null);
+  if(!response.ok)throw Error(data?.error||'Errore HTTP '+response.status+(response.status===404?' (funzione non ancora pubblicata in Supabase)':''));
+  if(el('toolsProperty').value!==id)return;
+  const names={airbnb:'Airbnb',booking:'Booking'};
+  const report=Object.entries(data.sources||{}).map(([k,v])=>names[k]+': '+(v.ok?'letto':'errore, '+v.error)).join(' · ');
+  if(!data.ok){out.textContent='Calendario NON aggiornato. '+report;return}
+  const days=new Set(nextDates().map(localDate)),busy=new Set(Array.isArray(data.busy)?data.busy:[]);
+  for(const day of days){if(busy.has(day))selectedOccupied.add(day);else selectedOccupied.delete(day)}
+  toolsDirty=true;renderPrivateCalendar();
+  out.textContent='Calendario aggiornato dai portali ('+report+'). Controlla le date e premi «Salva Concierge e Radar».';
+ }catch(err){out.textContent='Calendari: '+err.message}
+ finally{btn.disabled=false}
+}
+el('icalSync').addEventListener('click',syncCalendars);
 async function refresh(){
  [clients,properties,fees,leads,propertyTools,guestShares]=await Promise.all([
  call('/rest/v1/hdl_clients?select=id,full_name,email,phone,status,notes,created_at&order=created_at.desc&limit=500'),
  call('/rest/v1/hdl_properties?select=id,client_id,name,region,status,listing_url,pricing_plan,contract_start,created_at&order=created_at.desc&limit=500'),
  call('/rest/v1/hdl_compensi?select=id,property_id,period_start,period_end,payout_owner,cleaning_amount,fee_rate,fee_amount,status,paid_at&order=period_start.desc&limit=1000'),
  call('/rest/v1/hdl_leads?select=id,full_name,email,location,source,stage,next_follow_up,last_contact_at,notes,created_at&order=created_at.desc&limit=500'),
- call('/rest/v1/hdl_property_tools?select=property_id,checkin_time,checkout_time,parking,wifi_name,house_rules,waste_info,assistance_info,nightly_rate,sale_probability,occupied_dates&limit=500'),
+ loadToolsRows(),
  call('/rest/v1/hdl_guest_shares?select=property_id,share_token,is_published&limit=500')]);
  render();
  const full=[[clients,500,'clienti'],[properties,500,'immobili'],[fees,1000,'compensi'],[leads,500,'contatti']].filter(([list,max])=>list.length>=max).map(([,max,name])=>name+' (max '+max+')');
@@ -414,6 +447,7 @@ function loadPropertyTools(){
  el('toolHelp').value=t.assistance_info||'';
  el('toolRate').value=String(t.nightly_rate??130);
  el('toolConversion').value=String(t.sale_probability??25);
+ el('toolIcalAirbnb').value=t.ical_airbnb||'';el('toolIcalBooking').value=t.ical_booking||'';el('icalStatus').textContent=icalReady?'':'Collegamento calendari non ancora attivo: serve il file SQL in Supabase.';el('icalBox').hidden=!icalReady;
  selectedOccupied=new Set(t.occupied_dates||[]);
  renderPrivateCalendar();
 }
@@ -539,6 +573,7 @@ el('toolsForm').addEventListener('submit',async event=>{
   assistance_info:el('toolHelp').value.trim(),nightly_rate:rate,sale_probability:prob,
   occupied_dates:[...selectedOccupied].sort(),updated_at:new Date().toISOString()
  };
+ if(icalReady){try{payload.ical_airbnb=icalValue('toolIcalAirbnb','airbnb');payload.ical_booking=icalValue('toolIcalBooking','booking')}catch(error){status(error.message,'error');return}}
  btn.disabled=true;
  try{
   const saved=await call('/rest/v1/hdl_property_tools?on_conflict=property_id',{method:'POST',body:payload,prefer:'resolution=merge-duplicates,return=representation'});
