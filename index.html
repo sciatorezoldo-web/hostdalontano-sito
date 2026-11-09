@@ -476,6 +476,13 @@ input,textarea,select{max-width:100%}
         <label for="f-name">Il tuo nome
           <input id="f-name" name="name" autocomplete="name" placeholder="Es. Maria" maxlength="120" required>
         </label>
+        <label for="f-interest">Cosa ti interessa
+          <select id="f-interest" name="interest">
+            <option value="gestione">Gestione online della casa</option>
+            <option value="sito">Un sito per la mia casa</option>
+            <option value="entrambi">Tutti e due</option>
+          </select>
+        </label>
         <label for="f-city">Dov'è la casa
           <input id="f-city" name="city" placeholder="Es. Noto (SR)" maxlength="160" required>
         </label>
@@ -560,7 +567,10 @@ input,textarea,select{max-width:100%}
       emailField.focus();
       return;
     }
-    var msg = "Ciao Giuseppe, sono " + name + ".\nHo una casa vacanza a " + city + " e vorrei richiedere la prima analisi gratuita.";
+    var interestField = form.elements.namedItem("interest");
+    var interest = ["gestione","sito","entrambi"].indexOf(interestField.value) >= 0 ? interestField.value : "gestione";
+    var wish = {gestione: "vorrei richiedere la prima analisi gratuita", sito: "vorrei informazioni per un sito dedicato alla casa", entrambi: "vorrei richiedere la prima analisi gratuita e informazioni per un sito dedicato alla casa"}[interest];
+    var msg = "Ciao Giuseppe, sono " + name + ".\nHo una casa vacanza a " + city + " e " + wish + ".";
     if(link) msg += "\nLink dell'annuncio: " + link;
     else msg += "\nLa casa non ha ancora un annuncio online oppure preferisco inviarlo successivamente.";
     if(note) msg += "\nInformazioni aggiuntive: " + note;
@@ -573,18 +583,18 @@ input,textarea,select{max-width:100%}
     outGmail.href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(EMAIL) + "&su=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(msg);
     outOutlook.href = "https://outlook.live.com/mail/0/deeplink/compose?to=" + encodeURIComponent(EMAIL) + "&subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(msg);
     out.hidden = false;
-    if (SAVE_LEADS) { saveLead(name, city, replyEmail, link, note); return; }
+    if (SAVE_LEADS) { saveLead(name, city, replyEmail, link, note, interest); return; }
     status.textContent = "Email pronta ma non ancora inviata. Premi «Apri l'email» oppure, se usi la posta dal browser, «Invia con Gmail» o «Invia con Outlook.com». In alternativa copia il testo e mandalo a " + EMAIL + ".";
   });
 
-  function saveLead(name, city, replyEmail, link, note){
-    var signature = [name, city, replyEmail, link, note].join("\u0001");
+  function saveLead(name, city, replyEmail, link, note, interest){
+    var signature = [name, city, replyEmail, link, note, interest].join("\u0001");
     if (signature === savedSignature) { status.textContent = "Richiesta già ricevuta. Ti risponderò via email."; return; }
     status.textContent = "Invio della richiesta in corso…";
     fetch(LEAD_API, {
       method: "POST",
       headers: { "apikey": LEAD_KEY, "Content-Type": "application/json" },
-      body: JSON.stringify({ p_name: name, p_location: city, p_email: replyEmail || null, p_link: link || null, p_note: note || null }),
+      body: JSON.stringify({ p_name: name, p_location: city, p_email: replyEmail || null, p_link: link || null, p_note: note || null, p_interest: interest }),
       cache: "no-store"
     }).then(function(res){
       if (!res.ok) throw new Error("HTTP " + res.status);

@@ -2,7 +2,7 @@
 if(window.top!==window.self){document.documentElement.textContent='';try{window.top.location.href=window.self.location.href}catch(e){}return}
 const BASE='https://kgbkevncksvpfgqsvoqg.supabase.co';
 const KEY='sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX';
-let icalReady=false,bearer=null,refreshToken=null,expiresAt=0,renewing=null,toolsDirty=false,clients=[],properties=[],fees=[],leads=[],propertyTools=[],guestShares=[],selectedOccupied=new Set();
+let icalReady=false,bearer=null,refreshToken=null,expiresAt=0,renewing=null,toolsDirty=false,clients=[],properties=[],fees=[],leads=[],propertyTools=[],guestShares=[],siteProjects=[],selectedOccupied=new Set();
 const el=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(Number(n)||0);
 const status=(msg,type='')=>{el('status').textContent=msg;el('status').dataset.type=type};
@@ -37,7 +37,7 @@ function empty(tbody,columns){const tr=document.createElement('tr'),td=document.
 function option(select,value,label){let o=document.createElement('option');o.value=value;o.textContent=label;select.append(o)}
 function formData(form){return Object.fromEntries(new FormData(form).entries())}
 function setVisible(yes){el('signInBox').hidden=yes;el('adminBox').hidden=!yes}
-function logout(message='Sessione terminata.'){const token=bearer;bearer=null;refreshToken=null;expiresAt=0;toolsDirty=false;clients=[];properties=[];fees=[];leads=[];propertyTools=[];guestShares=[];selectedOccupied=new Set();el('password').value='';el('aiQuestion').value='';el('aiText').textContent='';el('aiResult').hidden=true;el('draftRecipient').value='';el('draftSubject').value='';el('draftBody').value='';el('emailPanel').hidden=true;el('shareUrl').value='';el('guidePreview').hidden=true;el('toolIcalAirbnb').value='';el('toolIcalBooking').value='';el('icalStatus').textContent='';el('icalBox').hidden=true;icalReady=false;
+function logout(message='Sessione terminata.'){const token=bearer;bearer=null;refreshToken=null;expiresAt=0;toolsDirty=false;clients=[];properties=[];fees=[];leads=[];propertyTools=[];guestShares=[];siteProjects=[];selectedOccupied=new Set();el('password').value='';el('aiQuestion').value='';el('aiText').textContent='';el('aiResult').hidden=true;el('draftRecipient').value='';el('draftSubject').value='';el('draftBody').value='';el('emailPanel').hidden=true;el('shareUrl').value='';el('guidePreview').hidden=true;el('toolIcalAirbnb').value='';el('toolIcalBooking').value='';el('icalStatus').textContent='';el('icalBox').hidden=true;icalReady=false;
  // Clear private data from the DOM, not just from the in-memory arrays.
  const admin=el('adminBox');
  admin.querySelectorAll('tbody').forEach(node=>node.replaceChildren());
@@ -83,13 +83,14 @@ async function syncCalendars(){
 }
 el('icalSync').addEventListener('click',syncCalendars);
 async function refresh(){
- [clients,properties,fees,leads,propertyTools,guestShares]=await Promise.all([
+ [clients,properties,fees,leads,propertyTools,guestShares,siteProjects]=await Promise.all([
  call('/rest/v1/hdl_clients?select=id,full_name,email,phone,status,notes,created_at&order=created_at.desc&limit=500'),
  call('/rest/v1/hdl_properties?select=id,client_id,name,region,status,listing_url,pricing_plan,contract_start,created_at&order=created_at.desc&limit=500'),
  call('/rest/v1/hdl_compensi?select=id,property_id,period_start,period_end,payout_owner,cleaning_amount,fee_rate,fee_amount,status,paid_at&order=period_start.desc&limit=1000'),
- call('/rest/v1/hdl_leads?select=id,full_name,email,location,source,stage,next_follow_up,last_contact_at,notes,created_at&order=created_at.desc&limit=500'),
+ call('/rest/v1/hdl_leads?select=id,full_name,email,location,source,stage,interest,next_follow_up,last_contact_at,notes,created_at&order=created_at.desc&limit=500'),
  loadToolsRows(),
- call('/rest/v1/hdl_guest_shares?select=property_id,share_token,is_published&limit=500')]);
+ call('/rest/v1/hdl_guest_shares?select=property_id,share_token,is_published&limit=500'),
+ call('/rest/v1/hdl_site_projects?select=*&order=created_at.desc&limit=500')]);
  render();
  const full=[[clients,500,'clienti'],[properties,500,'immobili'],[fees,1000,'compensi'],[leads,500,'contatti']].filter(([list,max])=>list.length>=max).map(([,max,name])=>name+' (max '+max+')');
  if(full.length)status('Attenzione: è stato raggiunto il limite di righe caricate per '+full.join(', ')+'. Alcuni dati potrebbero non essere mostrati.','error');
@@ -175,17 +176,17 @@ function render(){
  const ordered=[...leads].sort((a,b)=>(a.next_follow_up||'9999-12-31').localeCompare(b.next_follow_up||'9999-12-31'));
  const selected=ordered.filter(l=>{
    const closed=['won','lost'].includes(l.stage);
-   return filter==='all'||(filter==='open'&&!closed)||(filter==='closed'&&closed)||(filter==='due'&&!closed&&l.next_follow_up&&l.next_follow_up<=today);
+   return filter==='all'||(filter==='site'&&['sito','entrambi'].includes(l.interest))||(filter==='open'&&!closed)||(filter==='closed'&&closed)||(filter==='due'&&!closed&&l.next_follow_up&&l.next_follow_up<=today);
  });
  for(const l of selected){
-  const tr=document.createElement('tr');addCell(tr,l.full_name);addCell(tr,l.location||'—');addCell(tr,stageName[l.stage]||l.stage);
+  const tr=document.createElement('tr');addCell(tr,l.full_name);if(['sito','entrambi'].includes(l.interest)){const tag=document.createElement('span');tag.className='tagSite';tag.textContent=l.interest==='sito'?'Sito':'Sito + gestione';tr.lastChild.append(tag)}addCell(tr,l.location||'—');addCell(tr,stageName[l.stage]||l.stage);
   const dateCell=document.createElement('td');dateCell.textContent=l.next_follow_up||'—';
   if(l.next_follow_up&&l.next_follow_up<=today&&!['won','lost'].includes(l.stage)){dateCell.style.color='#a23a32';dateCell.style.fontWeight='700'}
   tr.append(dateCell);
   addButton(tr,'Modifica',()=>editLead(l));
   if(l.email)addButton(tr,'Email',()=>prepareDraft(l));
   else addCell(tr,'');
-  addButton(tr,'→ Cliente',()=>prefillClient(l));
+  if(['sito','entrambi'].includes(l.interest))addButton(tr,'→ Sito',()=>prefillSite(l));else addButton(tr,'→ Cliente',()=>prefillClient(l));
   lt.append(tr);
  }if(!selected.length)empty(lt,7);
  el('clientsCount').textContent=clients.length;
@@ -207,6 +208,52 @@ function render(){
  for(const p of properties){const tr=document.createElement('tr');addCell(tr,p.name);addCell(tr,clients.find(c=>c.id===p.client_id)?.full_name||'—');addCell(tr,p.region||'—');addButton(tr,'Modifica',()=>editProperty(p));pt.append(tr)}if(!properties.length)empty(pt,4);
  const ft=el('feeRows');ft.replaceChildren();
  for(const f of fees){const tr=document.createElement('tr');addCell(tr,properties.find(p=>p.id===f.property_id)?.name||'—');addCell(tr,f.period_start+' → '+f.period_end);addCell(tr,money(f.fee_amount));addCell(tr,({'pending':'Da fatturare','invoiced':'Fatturato','paid':'Incassato'})[f.status]||f.status);addButton(tr,'Modifica',()=>editFee(f));ft.append(tr)}if(!fees.length)empty(ft,5);
+ renderSites(today);
+}
+const SITE_STAGES={richiesta:'Richiesta',materiali:'Attesa materiali',costruzione:'In costruzione',revisione:'In revisione',online:'Online',sospeso:'Sospeso'};
+const SITE_MATERIALS=[['mat_foto','siteMatFoto'],['mat_testi','siteMatTesti'],['mat_regole','siteMatRegole'],['mat_logo','siteMatLogo'],['mat_dominio','siteMatDominio']];
+const SITE_LANGS=[['it','siteLangIt'],['en','siteLangEn'],['de','siteLangDe']];
+function addDays(day,n){const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10)}
+function renderSites(today){
+ const sc=el('siteClient'),sp=el('siteProperty'),keepC=sc.value,keepP=sp.value;sc.replaceChildren();sp.replaceChildren();
+ option(sc,'','Nessun cliente (ancora)');option(sp,'','Nessun immobile (ancora)');
+ for(const c of clients)option(sc,c.id,c.full_name);
+ for(const p of properties)option(sp,p.id,p.name);
+ sc.value=clients.some(c=>c.id===keepC)?keepC:'';sp.value=properties.some(p=>p.id===keepP)?keepP:'';
+ const building=siteProjects.filter(x=>x.stage==='costruzione').length,waiting=siteProjects.filter(x=>x.stage==='materiali').length;
+ const renew=siteProjects.filter(x=>x.renewal_date&&x.renewal_date<=addDays(today,30));
+ el('siteSummary').textContent=siteProjects.length?('In costruzione: '+building+' · In attesa di materiali: '+waiting+' · Rinnovi entro 30 giorni: '+renew.length+(renew.length?' ('+renew.map(x=>x.domain||x.title).join(', ')+')':'')):'Nessun sito ancora. Quando un proprietario chiede un sito, crea qui il progetto.';
+ el('siteSummary').style.color=renew.length?'#a23a32':'';
+ const rows=el('siteRows');rows.replaceChildren();
+ for(const x of siteProjects){
+  const tr=document.createElement('tr');addCell(tr,x.title);
+  addCell(tr,clients.find(c=>c.id===x.client_id)?.full_name||'—');
+  addCell(tr,SITE_STAGES[x.stage]||x.stage);
+  addCell(tr,SITE_MATERIALS.filter(([k])=>x[k]).length+'/5');
+  const due=document.createElement('td');due.textContent=x.due_date||'—';
+  if(x.due_date&&x.due_date<today&&!['online','sospeso'].includes(x.stage)){due.style.color='#a23a32';due.style.fontWeight='700'}
+  tr.append(due);addButton(tr,'Modifica',()=>editSite(x));rows.append(tr);
+ }
+ if(!siteProjects.length)empty(rows,6);
+}
+function editSite(x){
+ openPanel('sitePanel');el('siteForm').reset();el('siteId').value=x.id;
+ el('siteTitle').value=x.title;el('siteClient').value=x.client_id||'';el('siteProperty').value=x.property_id||'';el('siteStage').value=x.stage;
+ for(const [k,id] of SITE_MATERIALS)el(id).checked=!!x[k];
+ for(const [code,id] of SITE_LANGS)el(id).checked=(x.languages||[]).includes(code);
+ el('siteDomain').value=x.domain||'';el('sitePreview').value=x.preview_url||'';el('siteUrl').value=x.site_url||'';
+ el('sitePrice').value=x.price??'';el('sitePayment').value=x.payment_status||'da_pagare';
+ el('siteRecurring').value=x.recurring_cost??'';el('siteRenewal').value=x.renewal_date||'';el('siteDue').value=x.due_date||'';el('siteNotes').value=x.notes||'';
+ el('siteHeading').textContent='Modifica sito su misura';
+}
+function prefillSite(l){
+ openPanel('sitePanel');el('siteForm').reset();el('siteId').value='';
+ el('siteTitle').value='Sito per '+l.full_name+(l.location?' · '+l.location:'');
+ const match=clients.find(c=>(l.email&&c.email&&c.email.toLowerCase()===l.email.toLowerCase())||c.full_name.trim().toLowerCase()===l.full_name.trim().toLowerCase());
+ el('siteClient').value=match?match.id:'';
+ el('siteNotes').value='Dal contatto: '+l.full_name+(l.email?' <'+l.email+'>':'')+(l.notes?'\n'+l.notes:'');
+ el('siteHeading').textContent='Nuovo sito su misura';
+ if(!match)status('Il progetto non è collegato a un cliente: puoi crearlo dopo l’accordo e collegarlo qui.','ok');
 }
 function openPanel(id){document.querySelectorAll('[data-panel]').forEach(x=>x.hidden=x.id!==id);document.querySelectorAll('[data-open]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.open===id)));el('editor').scrollIntoView({behavior:'smooth',block:'start'})}
 function prefillClient(l){
@@ -232,7 +279,7 @@ function prepareDraft(l){
  el('draftBody').value=body.replaceAll('\\n','\n');
  el('emailPanel').hidden=false;el('emailPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
-function editLead(l){openPanel('leadPanel');el('leadForm').reset();el('leadId').value=l.id;el('leadName').value=l.full_name;el('leadEmail').value=l.email||'';el('leadLocation').value=l.location||'';el('leadSource').value=l.source;el('leadStage').value=l.stage;el('leadFollowUp').value=l.next_follow_up||'';el('leadLastContact').value=l.last_contact_at||'';el('leadNotes').value=l.notes||'';el('leadHeading').textContent='Modifica contatto'}
+function editLead(l){openPanel('leadPanel');el('leadForm').reset();el('leadId').value=l.id;el('leadName').value=l.full_name;el('leadEmail').value=l.email||'';el('leadLocation').value=l.location||'';el('leadSource').value=l.source;el('leadInterest').value=l.interest||'gestione';el('leadStage').value=l.stage;el('leadFollowUp').value=l.next_follow_up||'';el('leadLastContact').value=l.last_contact_at||'';el('leadNotes').value=l.notes||'';el('leadHeading').textContent='Modifica contatto'}
 function editClient(c){openPanel('clientPanel');el('clientForm').reset();el('clientId').value=c.id;el('clientName').value=c.full_name;el('clientEmail').value=c.email||'';el('clientPhone').value=c.phone||'';el('clientStatus').value=c.status;el('clientNotes').value=c.notes||'';el('clientHeading').textContent='Modifica cliente'}
 function editProperty(p){openPanel('propertyPanel');el('propertyForm').reset();el('propertyId').value=p.id;el('propertyClient').value=p.client_id;el('propertyName').value=p.name;el('propertyRegion').value=p.region||'';el('propertyStatus').value=p.status;el('propertyLink').value=p.listing_url||'';el('propertyPricingPlan').value=p.pricing_plan||'standard';el('propertyContractStart').value=p.contract_start||'';togglePropertyContractDate();el('propertyHeading').textContent='Modifica immobile'}
 function editFee(f){openPanel('feePanel');el('feeForm').reset();el('feeId').value=f.id;el('feeProperty').value=f.property_id;el('start').value=f.period_start;el('end').value=f.period_end;el('payout').value=f.payout_owner;el('cleaning').value=f.cleaning_amount;el('feeStatus').value=f.status;togglePaidAt();el('paidAt').value=f.paid_at||'';showEffectiveFee();el('feeHeading').textContent='Modifica compenso'}
@@ -285,7 +332,7 @@ function showEffectiveFee(){
 }
 for(const id of ['feeProperty','start','end'])el(id).addEventListener('change',showEffectiveFee);
 
-document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.open;openPanel(id);if(id==='toolsPanel'){loadPropertyTools();return}const form=el(id).querySelector('form');form.reset();form.querySelector('input[type=hidden]').value='';if(id==='propertyPanel')togglePropertyContractDate();if(id==='feePanel'){showEffectiveFee();togglePaidAt();}el(({leadPanel:'leadHeading',clientPanel:'clientHeading',propertyPanel:'propertyHeading',feePanel:'feeHeading'})[id]).textContent=({leadPanel:'Nuovo contatto interessato',clientPanel:'Nuovo cliente',propertyPanel:'Nuovo immobile',feePanel:'Nuovo compenso'})[id]}));
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.open;openPanel(id);if(id==='toolsPanel'){loadPropertyTools();return}const form=el(id).querySelector('form');form.reset();form.querySelector('input[type=hidden]').value='';if(id==='propertyPanel')togglePropertyContractDate();if(id==='feePanel'){showEffectiveFee();togglePaidAt();}el(({leadPanel:'leadHeading',clientPanel:'clientHeading',propertyPanel:'propertyHeading',feePanel:'feeHeading',sitePanel:'siteHeading'})[id]).textContent=({leadPanel:'Nuovo contatto interessato',clientPanel:'Nuovo cliente',propertyPanel:'Nuovo immobile',feePanel:'Nuovo compenso',sitePanel:'Nuovo sito su misura'})[id]}));
 el('loginForm').addEventListener('submit',async event=>{
  event.preventDefault();el('loginMessage').textContent='Verifico l’accesso…';const b=el('loginButton');b.disabled=true;
  try{
@@ -322,8 +369,8 @@ function downloadBackup(){
  const now=new Date();
  const stamp=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
  const data={formato:'host-da-lontano-backup',versione:1,creato_il:now.toISOString(),
-  conteggi:{clienti:clients.length,immobili:properties.length,compensi:fees.length,contatti:leads.length,strumenti_immobili:propertyTools.length,guide_ospiti:guestShares.length},
-  hdl_clients:clients,hdl_properties:properties,hdl_compensi:fees,hdl_leads:leads,hdl_property_tools:propertyTools,hdl_guest_shares:guestShares};
+  conteggi:{clienti:clients.length,immobili:properties.length,compensi:fees.length,contatti:leads.length,strumenti_immobili:propertyTools.length,guide_ospiti:guestShares.length,siti:siteProjects.length},
+  hdl_clients:clients,hdl_properties:properties,hdl_compensi:fees,hdl_leads:leads,hdl_property_tools:propertyTools,hdl_guest_shares:guestShares,hdl_site_projects:siteProjects};
  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
  const url=URL.createObjectURL(blob);
  const link=document.createElement('a');link.href=url;link.download='host-da-lontano-backup-'+stamp+'.json';
@@ -355,7 +402,7 @@ async function saveRecord(form,table,idField,payload){
 function guard(form,fn){form.addEventListener('submit',async event=>{event.preventDefault();const btn=form.querySelector('[type=submit]');btn.disabled=true;try{await fn()}catch(error){status('Impossibile salvare: '+error.message,'error')}finally{btn.disabled=false}})}
 guard(el('leadForm'),async()=>{
  const f=formData(el('leadForm'));if(!f.full_name?.trim())throw Error('Inserisci un nome.');
- await saveRecord(el('leadForm'),'hdl_leads','leadId',{full_name:f.full_name.trim(),email:f.email?.trim()||null,location:f.location?.trim()||null,source:f.source,stage:f.stage,next_follow_up:f.next_follow_up||null,last_contact_at:f.last_contact_at||null,notes:f.notes?.trim()||null});
+ await saveRecord(el('leadForm'),'hdl_leads','leadId',{full_name:f.full_name.trim(),email:f.email?.trim()||null,location:f.location?.trim()||null,source:f.source,stage:f.stage,interest:['gestione','sito','entrambi'].includes(f.interest)?f.interest:'gestione',next_follow_up:f.next_follow_up||null,last_contact_at:f.last_contact_at||null,notes:f.notes?.trim()||null});
 });
 guard(el('clientForm'),async()=>{
  const f=formData(el('clientForm'));if(!f.full_name?.trim())throw Error('Inserisci il nome del cliente.');
@@ -366,6 +413,19 @@ guard(el('propertyForm'),async()=>{
  if(!['standard','launch','special20'].includes(f.pricing_plan))throw Error('Piano tariffario non valido.');
  if(f.pricing_plan==='launch'&&!f.contract_start)throw Error('Inserisci la data di inizio della promozione.');
  await saveRecord(el('propertyForm'),'hdl_properties','propertyId',{client_id:f.client_id,name:f.name.trim(),region:f.region?.trim()||null,listing_url:f.listing_url?.trim()||null,status:f.status,pricing_plan:f.pricing_plan,contract_start:f.pricing_plan==='launch'?f.contract_start:null});
+});
+guard(el('siteForm'),async()=>{
+ const f=formData(el('siteForm'));if(!f.title?.trim())throw Error('Scrivi il nome del progetto.');
+ const langs=SITE_LANGS.filter(([,id])=>el(id).checked).map(([code])=>code);if(!langs.length)throw Error('Scegli almeno una lingua.');
+ const num=v=>{if(v===undefined||v==='')return null;const n=Number(v);if(!Number.isFinite(n)||n<0||n>100000)throw Error('Controlla gli importi.');return Math.round(n*100)/100};
+ const url=v=>{v=(v||'').trim();if(!v)return null;if(!/^https?:\/\//i.test(v))throw Error('I link devono iniziare con https://');return v};
+ if(!Object.keys(SITE_STAGES).includes(f.stage)||!['da_pagare','acconto','pagato'].includes(f.payment_status))throw Error('Valori non validi.');
+ const payload={title:f.title.trim(),client_id:f.client_id||null,property_id:f.property_id||null,stage:f.stage,languages:langs,
+  domain:f.domain?.trim().toLowerCase()||null,preview_url:url(f.preview_url),site_url:url(f.site_url),
+  price:num(f.price),payment_status:f.payment_status,recurring_cost:num(f.recurring_cost),renewal_date:f.renewal_date||null,due_date:f.due_date||null,
+  notes:f.notes?.trim()||null,updated_at:new Date().toISOString()};
+ for(const [k,id] of SITE_MATERIALS)payload[k]=el(id).checked;
+ await saveRecord(el('siteForm'),'hdl_site_projects','siteId',payload);
 });
 guard(el('feeForm'),async()=>{
  const f=formData(el('feeForm')),p=euroValue(f.payout_owner),c=euroValue(f.cleaning_amount);
