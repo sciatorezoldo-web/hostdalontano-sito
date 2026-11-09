@@ -453,7 +453,7 @@ input,textarea,select{max-width:100%}
         <details><summary>La guida per gli ospiti mostra la password del Wi-Fi o i codici di accesso?</summary><p>No. La guida digitale contiene solo informazioni pratiche: orari di arrivo e partenza, parcheggio, regole della casa, rifiuti e contatti utili. Password, codici e dati personali non vengono mai pubblicati. Il link si può disattivare in qualsiasi momento.</p></details>
         <details><summary>Il Radar è collegato ad Airbnb o Booking?</summary><p>No. Il Radar lavora sul calendario che segno io e mi aiuta a vedere i giorni liberi e dove conviene intervenire. Non cambia da solo prezzi o annunci sui portali: ogni modifica la faccio io, a mano.</p></details>
         <details><summary>Usi l'intelligenza artificiale?</summary><p>Gli strumenti sono predisposti, ma per ora l'intelligenza artificiale è spenta. Quando la userò, servirà solo a preparare bozze, per esempio una risposta a un ospite, che controllo sempre io prima di usarle. Nessun messaggio parte in automatico.</p></details>
-        <details><summary>Dove finiscono i dati che ti mando?</summary><p>Il modulo del sito prepara solo un'email: non salva niente da solo. Se iniziamo a lavorare insieme, i dati della tua casa vanno in un gestionale privato, protetto da password, a cui accedo solo io, con il database in Europa (Germania). Trovi tutti i dettagli nell'<a href="privacy.html">informativa privacy</a>.</p></details>
+        <details><summary>Dove finiscono i dati che ti mando?</summary><p>Le richieste del modulo vengono salvate nel mio gestionale privato, protetto da password, a cui accedo solo io, con il database in Europa (Germania). Lì vanno anche i dati della tua casa, se iniziamo a lavorare insieme. Trovi tutti i dettagli nell'<a href="privacy.html">informativa privacy</a>.</p></details>
         <details><summary>Dove lavori?</summary><p>In tutta Italia, e spero un giorno anche qui in Germania, dove vivo. Visto che seguo tutto online, la casa può essere ovunque: serve solo che ci sia qualcuno sul posto per pulizie e chiavi.</p></details>
       </div>
     </div>
@@ -489,7 +489,7 @@ input,textarea,select{max-width:100%}
           <textarea id="f-note" name="note" maxlength="2000" placeholder="Es. la casa non è ancora online, vivo a Milano…"></textarea>
         </label>
         <button class="btn btn-primary" type="submit">Prepara l'email per l'analisi</button>
-        <p class="hero-note" style="margin-top:10px">Il modulo prepara un messaggio sul tuo dispositivo, senza trasmettere dati al sito; se scegli Gmail o Outlook.com, il testo viene aperto nel servizio di posta che hai scelto. Controlla l’email prima di premere «Invia» nella tua app di posta. Consulta anche l’<a href="privacy.html">informativa privacy</a>.</p>
+        <p class="hero-note" style="margin-top:10px">Inviando il modulo, la richiesta viene salvata nel mio gestionale riservato per poterti rispondere. Ti viene preparata anche un’email: puoi inviarla dalla tua app di posta, con Gmail o con Outlook.com. Consulta anche l’<a href="privacy.html">informativa privacy</a>.</p>
         <p class="status" id="f-status" role="status" aria-live="polite"></p>
         <div class="out" id="out" hidden>
           <span class="label">Il tuo messaggio</span>
@@ -518,7 +518,7 @@ input,textarea,select{max-width:100%}
   var EMAIL = "giuseppe@hostdalontano.com"; // indirizzo email del servizio
   // Salvataggio diretto nel gestionale: lasciare false finché non è stata eseguita
   // supabase/proposte/salva-richieste-sito.sql e aggiornata la privacy.
-  var SAVE_LEADS = false;
+  var SAVE_LEADS = true;
   var LEAD_API = "https://kgbkevncksvpfgqsvoqg.supabase.co/rest/v1/rpc/hdl_submit_lead";
   var LEAD_KEY = "sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX";
   var savedSignature = "";

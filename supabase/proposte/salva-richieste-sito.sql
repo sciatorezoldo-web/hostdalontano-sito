@@ -21,7 +21,7 @@ create or replace function public.hdl_submit_lead(
 ) returns boolean
 language plpgsql
 security definer
-set search_path = public
+set search_path = ''
 as $$
 declare
   v_name text := trim(coalesce(p_name, ''));
@@ -39,15 +39,15 @@ begin
   if v_note is not null and length(v_note) > 2000 then raise exception 'Nota troppo lunga'; end if;
 
   -- Limite anti-spam globale: massimo 20 richieste dal sito per ora, 3 per la stessa email al giorno.
-  if (select count(*) from hdl_leads where source = 'sito' and created_at > now() - interval '1 hour') >= 20 then
+  if (select count(*) from public.hdl_leads where source = 'sito' and created_at > now() - interval '1 hour') >= 20 then
     raise exception 'Troppe richieste, riprova più tardi';
   end if;
-  if v_email is not null and (select count(*) from hdl_leads
+  if v_email is not null and (select count(*) from public.hdl_leads
       where source = 'sito' and lower(email) = lower(v_email) and created_at > now() - interval '1 day') >= 3 then
     raise exception 'Richiesta già ricevuta';
   end if;
 
-  insert into hdl_leads (full_name, email, location, source, stage, notes)
+  insert into public.hdl_leads (full_name, email, location, source, stage, notes)
   values (
     v_name, v_email, v_location, 'sito', 'new',
     concat_ws(E'\n', 'Richiesta dal modulo del sito.',
