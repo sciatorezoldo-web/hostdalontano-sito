@@ -643,6 +643,11 @@ el('toolsForm').addEventListener('submit',async event=>{
  finally{btn.disabled=false}
 });
 
-el('refresh').addEventListener('click',async()=>{try{await refresh();status('Dati aggiornati.','ok')}catch(err){status(err.message,'error')}});
+el('refresh').addEventListener('click',async()=>{
+ const btn=el('refresh'),label='Aggiorna dati';btn.disabled=true;btn.textContent='Aggiorno…';
+ try{await refresh();const time=new Intl.DateTimeFormat('it-IT',{hour:'2-digit',minute:'2-digit'}).format(new Date());status('Dati aggiornati alle '+time+'.','ok');btn.textContent='Aggiornato ✓'}
+ catch(err){status('Aggiornamento non riuscito: '+err.message,'error');btn.textContent='Errore, riprova';el('status').scrollIntoView({behavior:'smooth',block:'center'})}
+ finally{btn.disabled=false;setTimeout(()=>{btn.textContent=label},2500)}
+});
 setVisible(false);
 })();
