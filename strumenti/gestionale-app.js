@@ -259,6 +259,17 @@ function prefillSite(l){
  el('siteHeading').textContent='Nuovo sito su misura';
  if(!match)status('Il progetto non è collegato a un cliente: puoi crearlo dopo l’accordo e collegarlo qui.','ok');
 }
+// Delete a lead: only while editing an existing one, with a second click to confirm.
+let leadDeleteArmed=false,leadDeleteTimer=null;
+function resetLeadDelete(show){const b=el('leadDelete');leadDeleteArmed=false;clearTimeout(leadDeleteTimer);b.textContent='Elimina contatto';b.hidden=!show}
+el('leadDelete').addEventListener('click',async()=>{
+ const id=el('leadId').value,b=el('leadDelete');if(!id)return;
+ if(!leadDeleteArmed){leadDeleteArmed=true;b.textContent='Sicuro? Clicca di nuovo per eliminare';leadDeleteTimer=setTimeout(()=>resetLeadDelete(true),6000);return}
+ b.disabled=true;
+ try{const gone=await call('/rest/v1/hdl_leads?id=eq.'+encodeURIComponent(id),{method:'DELETE'});if(!Array.isArray(gone)||gone.length!==1)throw Error('il database non ha eliminato il contatto.');el('leadForm').reset();el('leadId').value='';resetLeadDelete(false);await refresh();status('Contatto eliminato.','ok')}
+ catch(err){status('Eliminazione non riuscita: '+err.message,'error');resetLeadDelete(true)}
+ finally{b.disabled=false}
+});
 function openPanel(id){document.querySelectorAll('[data-panel]').forEach(x=>x.hidden=x.id!==id);document.querySelectorAll('[data-open]').forEach(b=>b.setAttribute('aria-current',String(b.dataset.open===id)));el('editor').scrollIntoView({behavior:'smooth',block:'start'})}
 function prefillClient(l){
  const match=clients.find(c=>(l.email&&c.email&&c.email.toLowerCase()===l.email.toLowerCase())||c.full_name.trim().toLowerCase()===l.full_name.trim().toLowerCase());
@@ -283,7 +294,7 @@ function prepareDraft(l){
  el('draftBody').value=body.replaceAll('\\n','\n');
  el('emailPanel').hidden=false;el('emailPanel').scrollIntoView({behavior:'smooth',block:'start'});
 }
-function editLead(l){openPanel('leadPanel');el('leadForm').reset();el('leadId').value=l.id;el('leadName').value=l.full_name;el('leadEmail').value=l.email||'';el('leadLocation').value=l.location||'';el('leadSource').value=l.source;el('leadInterest').value=l.interest||'gestione';el('leadStage').value=l.stage;el('leadFollowUp').value=l.next_follow_up||'';el('leadLastContact').value=l.last_contact_at||'';el('leadNotes').value=l.notes||'';el('leadHeading').textContent='Modifica contatto'}
+function editLead(l){openPanel('leadPanel');el('leadForm').reset();resetLeadDelete(true);el('leadId').value=l.id;el('leadName').value=l.full_name;el('leadEmail').value=l.email||'';el('leadLocation').value=l.location||'';el('leadSource').value=l.source;el('leadInterest').value=l.interest||'gestione';el('leadStage').value=l.stage;el('leadFollowUp').value=l.next_follow_up||'';el('leadLastContact').value=l.last_contact_at||'';el('leadNotes').value=l.notes||'';el('leadHeading').textContent='Modifica contatto'}
 function editClient(c){openPanel('clientPanel');el('clientForm').reset();el('clientId').value=c.id;el('clientName').value=c.full_name;el('clientEmail').value=c.email||'';el('clientPhone').value=c.phone||'';el('clientStatus').value=c.status;el('clientNotes').value=c.notes||'';el('clientHeading').textContent='Modifica cliente'}
 function editProperty(p){openPanel('propertyPanel');el('propertyForm').reset();el('propertyId').value=p.id;el('propertyClient').value=p.client_id;el('propertyName').value=p.name;el('propertyRegion').value=p.region||'';el('propertyStatus').value=p.status;el('propertyLink').value=p.listing_url||'';el('propertyPricingPlan').value=p.pricing_plan||'standard';el('propertyContractStart').value=p.contract_start||'';togglePropertyContractDate();el('propertyHeading').textContent='Modifica immobile'}
 function editFee(f){openPanel('feePanel');el('feeForm').reset();el('feeId').value=f.id;el('feeProperty').value=f.property_id;el('start').value=f.period_start;el('end').value=f.period_end;el('payout').value=f.payout_owner;el('cleaning').value=f.cleaning_amount;el('feeStatus').value=f.status;togglePaidAt();el('paidAt').value=f.paid_at||'';showEffectiveFee();el('feeHeading').textContent='Modifica compenso'}
@@ -336,7 +347,7 @@ function showEffectiveFee(){
 }
 for(const id of ['feeProperty','start','end'])el(id).addEventListener('change',showEffectiveFee);
 
-document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.open;openPanel(id);if(id==='toolsPanel'){loadPropertyTools();return}const form=el(id).querySelector('form');form.reset();form.querySelector('input[type=hidden]').value='';if(id==='propertyPanel')togglePropertyContractDate();if(id==='feePanel'){showEffectiveFee();togglePaidAt();}el(({leadPanel:'leadHeading',clientPanel:'clientHeading',propertyPanel:'propertyHeading',feePanel:'feeHeading',sitePanel:'siteHeading'})[id]).textContent=({leadPanel:'Nuovo contatto interessato',clientPanel:'Nuovo cliente',propertyPanel:'Nuovo immobile',feePanel:'Nuovo compenso',sitePanel:'Nuovo sito su misura'})[id]}));
+document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.open;resetLeadDelete(false);openPanel(id);if(id==='toolsPanel'){loadPropertyTools();return}const form=el(id).querySelector('form');form.reset();form.querySelector('input[type=hidden]').value='';if(id==='propertyPanel')togglePropertyContractDate();if(id==='feePanel'){showEffectiveFee();togglePaidAt();}el(({leadPanel:'leadHeading',clientPanel:'clientHeading',propertyPanel:'propertyHeading',feePanel:'feeHeading',sitePanel:'siteHeading'})[id]).textContent=({leadPanel:'Nuovo contatto interessato',clientPanel:'Nuovo cliente',propertyPanel:'Nuovo immobile',feePanel:'Nuovo compenso',sitePanel:'Nuovo sito su misura'})[id]}));
 el('loginForm').addEventListener('submit',async event=>{
  event.preventDefault();el('loginMessage').textContent='Verifico l’accesso…';const b=el('loginButton');b.disabled=true;
  try{
