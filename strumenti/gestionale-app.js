@@ -32,7 +32,8 @@ async function call(path,{method='GET',body,prefer}={},retried=false){
  return data;
 }
 function addCell(row,value){const td=document.createElement('td');td.textContent=String(value??'—');row.append(td)}
-function addButton(row,label,fn,style=''){const td=document.createElement('td'),b=document.createElement('button');b.type='button';b.textContent=label;b.className='mini '+style;b.addEventListener('click',fn);td.append(b);row.append(td)}
+// Buttons of the same row share one cell, so they wrap instead of widening the table.
+function addButton(row,label,fn,style=''){let td=row.lastElementChild;if(!td||!td.classList.contains('acts')){td=document.createElement('td');td.className='acts';const wrap=document.createElement('div');wrap.className='actsWrap';td.append(wrap);row.append(td)}const b=document.createElement('button');b.type='button';b.textContent=label;b.className='mini '+style;b.addEventListener('click',fn);td.firstChild.append(b)}
 function empty(tbody,columns){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=columns;td.textContent='Nessun dato ancora inserito';td.className='muted';tr.append(td);tbody.append(tr)}
 function option(select,value,label){let o=document.createElement('option');o.value=value;o.textContent=label;select.append(o)}
 function formData(form){return Object.fromEntries(new FormData(form).entries())}
@@ -189,10 +190,9 @@ function render(){
   tr.append(dateCell);
   addButton(tr,'Modifica',()=>editLead(l));
   if(l.email)addButton(tr,'Email',()=>prepareDraft(l));
-  else addCell(tr,'');
   if(['sito','entrambi'].includes(l.interest))addButton(tr,'→ Sito',()=>prefillSite(l));else addButton(tr,'→ Cliente',()=>prefillClient(l));
   lt.append(tr);
- }if(!selected.length)empty(lt,7);
+ }if(!selected.length)empty(lt,5);
  el('clientsCount').textContent=clients.length;
  el('propertiesCount').textContent=properties.length;
  el('totalFees').textContent=money(fees.reduce((s,f)=>s+Number(f.fee_amount),0));
