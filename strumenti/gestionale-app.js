@@ -2,7 +2,7 @@
 if(window.top!==window.self){document.documentElement.textContent='';try{window.top.location.href=window.self.location.href}catch(e){}return}
 const BASE='https://kgbkevncksvpfgqsvoqg.supabase.co';
 const KEY='sb_publishable_Ak6qpHDtfKvrC1VcFCUGtg_QlY-HRLX';
-let icalReady=false,bearer=null,refreshToken=null,expiresAt=0,renewing=null,toolsDirty=false,clients=[],properties=[],fees=[],leads=[],propertyTools=[],guestShares=[],siteProjects=[],selectedOccupied=new Set();
+let guideReady=false,icalReady=false,bearer=null,refreshToken=null,expiresAt=0,renewing=null,toolsDirty=false,clients=[],properties=[],fees=[],leads=[],propertyTools=[],guestShares=[],siteProjects=[],selectedOccupied=new Set();
 const el=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(Number(n)||0);
 const status=(msg,type='')=>{el('status').textContent=msg;el('status').dataset.type=type};
@@ -37,7 +37,7 @@ function empty(tbody,columns){const tr=document.createElement('tr'),td=document.
 function option(select,value,label){let o=document.createElement('option');o.value=value;o.textContent=label;select.append(o)}
 function formData(form){return Object.fromEntries(new FormData(form).entries())}
 function setVisible(yes){el('signInBox').hidden=yes;el('adminBox').hidden=!yes}
-function logout(message='Sessione terminata.'){const token=bearer;bearer=null;refreshToken=null;expiresAt=0;toolsDirty=false;clients=[];properties=[];fees=[];leads=[];propertyTools=[];guestShares=[];siteProjects=[];selectedOccupied=new Set();el('password').value='';el('aiQuestion').value='';el('aiText').textContent='';el('aiResult').hidden=true;el('draftRecipient').value='';el('draftSubject').value='';el('draftBody').value='';el('emailPanel').hidden=true;el('shareUrl').value='';el('guidePreview').hidden=true;el('toolIcalAirbnb').value='';el('toolIcalBooking').value='';el('icalStatus').textContent='';el('icalBox').hidden=true;icalReady=false;
+function logout(message='Sessione terminata.'){const token=bearer;bearer=null;refreshToken=null;expiresAt=0;toolsDirty=false;clients=[];properties=[];fees=[];leads=[];propertyTools=[];guestShares=[];siteProjects=[];selectedOccupied=new Set();el('password').value='';el('aiQuestion').value='';el('aiText').textContent='';el('aiResult').hidden=true;el('draftRecipient').value='';el('draftSubject').value='';el('draftBody').value='';el('emailPanel').hidden=true;el('shareUrl').value='';el('guidePreview').hidden=true;el('toolIcalAirbnb').value='';el('toolIcalBooking').value='';el('icalStatus').textContent='';el('icalBox').hidden=true;icalReady=false;guideReady=false;el('toolMaps').value='';document.querySelectorAll('#toolsForm .gx').forEach(n=>n.value='');el('qrCode').replaceChildren();el('qrBox').hidden=true;
  // Clear private data from the DOM, not just from the in-memory arrays.
  const admin=el('adminBox');
  admin.querySelectorAll('tbody').forEach(node=>node.replaceChildren());
@@ -52,8 +52,12 @@ function logout(message='Sessione terminata.'){const token=bearer;bearer=null;re
 // The iCal columns exist only after supabase/proposte/radar-calendari-ical.sql has been run.
 const TOOLS_COLUMNS='property_id,checkin_time,checkout_time,parking,wifi_name,house_rules,waste_info,assistance_info,nightly_rate,sale_probability,occupied_dates';
 async function loadToolsRows(){
- try{const rows=await call('/rest/v1/hdl_property_tools?select='+TOOLS_COLUMNS+',ical_airbnb,ical_booking&limit=500');icalReady=true;return rows}
- catch(error){if(!bearer)throw error;icalReady=false;return call('/rest/v1/hdl_property_tools?select='+TOOLS_COLUMNS+'&limit=500')}
+ // Newest columns first; fall back if a SQL file has not been run yet.
+ const attempts=[[',ical_airbnb,ical_booking,maps_url,guide_extra',true,true],[',ical_airbnb,ical_booking',true,false],['',false,false]];
+ for(const [extra,ical,guideCols] of attempts){
+  try{const rows=await call('/rest/v1/hdl_property_tools?select='+TOOLS_COLUMNS+extra+'&limit=500');icalReady=ical;guideReady=guideCols;return rows}
+  catch(error){if(!bearer||!extra)throw error}
+ }
 }
 const ICAL_RULES={airbnb:/^https:\/\/(www\.)?airbnb\.[a-z.]{2,8}\//i,booking:/^https:\/\/([a-z0-9-]+\.)*booking\.com\//i};
 function icalValue(id,source){const v=el(id).value.trim();if(!v)return null;if(v.length>1000||!ICAL_RULES[source].test(v))throw Error('Il link calendario '+(source==='airbnb'?'Airbnb':'Booking')+' non sembra corretto: copia il link iCal (.ics) dal portale.');return v}
@@ -74,10 +78,10 @@ async function syncCalendars(){
   const names={airbnb:'Airbnb',booking:'Booking'};
   const report=Object.entries(data.sources||{}).map(([k,v])=>names[k]+': '+(v.ok?'letto':'errore, '+v.error)).join(' · ');
   if(!data.ok){out.textContent='Calendario NON aggiornato. '+report;return}
-  const days=new Set(nextDates().map(localDate)),busy=new Set(Array.isArray(data.busy)?data.busy:[]);
+  const days=new Set(nextDates(90).map(localDate)),busy=new Set(Array.isArray(data.busy)?data.busy:[]);
   for(const day of days){if(busy.has(day))selectedOccupied.add(day);else selectedOccupied.delete(day)}
   toolsDirty=true;renderPrivateCalendar();
-  out.textContent='Calendario aggiornato dai portali ('+report+'). Controlla le date e premi «Salva Concierge e Radar».';
+  out.textContent='Calendario aggiornato dai portali per i prossimi 90 giorni ('+report+'). Controlla le date e premi «Salva Concierge e Radar».';
  }catch(err){out.textContent='Calendari: '+err.message}
  finally{btn.disabled=false}
 }
@@ -445,7 +449,8 @@ guard(el('feeForm'),async()=>{
 
 // Radar dates follow the Italian calendar (Europe/Rome), the same as the server function.
 function localDate(d){return [d.getUTCFullYear(),String(d.getUTCMonth()+1).padStart(2,'0'),String(d.getUTCDate()).padStart(2,'0')].join('-')}
-function nextDates(){const p=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()).split('-').map(Number);return Array.from({length:28},(_,i)=>new Date(Date.UTC(p[0],p[1]-1,p[2]+i,12)))}
+function radarLength(){const n=Number(el('radarDays')?.value);return [28,60,90].includes(n)?n:28}
+function nextDates(length=radarLength()){const p=new Intl.DateTimeFormat('sv-SE',{timeZone:'Europe/Rome',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()).split('-').map(Number);return Array.from({length},(_,i)=>new Date(Date.UTC(p[0],p[1]-1,p[2]+i,12)))}
 
 function clearAiDraft(){
  el('aiResult').hidden=true;
@@ -507,6 +512,7 @@ function loadPropertyTools(){
  el('toolHelp').value=t.assistance_info||'';
  el('toolRate').value=String(t.nightly_rate??130);
  el('toolConversion').value=String(t.sale_probability??25);
+ el('guideExtraBox').hidden=!guideReady;el('toolMaps').value=t.maps_url||'';const gx=(t.guide_extra&&typeof t.guide_extra==='object')?t.guide_extra:{};document.querySelectorAll('#toolsForm .gx').forEach(n=>{n.value=(gx[n.dataset.lang]&&typeof gx[n.dataset.lang][n.dataset.key]==='string')?gx[n.dataset.lang][n.dataset.key]:''});
  el('toolIcalAirbnb').value=t.ical_airbnb||'';el('toolIcalBooking').value=t.ical_booking||'';el('icalStatus').textContent=icalReady?'':'Collegamento calendari non ancora attivo: serve il file SQL in Supabase.';el('icalBox').hidden=!icalReady;
  selectedOccupied=new Set(t.occupied_dates||[]);
  renderPrivateCalendar();
@@ -531,11 +537,37 @@ function previewGuestGuide(){
 el('previewGuide').addEventListener('click',previewGuestGuide);
 el('closeGuidePreview').addEventListener('click',()=>el('guidePreview').hidden=true);
 
+// Rule-based Radar hints (no AI): short free gaps between bookings and free weekends.
+function radarOpportunities(keys,busy){
+ const gaps=[],gapDays=[],weekends=[];let run=[];
+ const fmt=new Intl.DateTimeFormat('it-IT',{timeZone:'UTC',weekday:'short',day:'numeric',month:'short'});
+ const label=k=>fmt.format(new Date(k+'T12:00:00Z'));
+ keys.forEach((k,i)=>{
+  if(!busy.has(k)){run.push(i);return}
+  if(run.length&&run.length<=2&&run[0]>0){gaps.push(run.map(j=>keys[j]));run.forEach(j=>gapDays.push(keys[j]))}
+  run=[];
+ });
+ keys.forEach((k,i)=>{
+  const dow=new Date(k+'T12:00:00Z').getUTCDay();
+  if(dow===5&&i+1<keys.length&&!busy.has(k)&&!busy.has(keys[i+1]))weekends.push(k);
+ });
+ return {gaps,gapDays,weekends,label};
+}
+function renderRadarTips(ops){
+ const box=el('radarTips');box.replaceChildren();
+ const short=new Intl.DateTimeFormat('it-IT',{timeZone:'UTC',day:'numeric',month:'short'});
+ const d=k=>short.format(new Date(k+'T12:00:00Z'));
+ const line=(title,list,advice)=>{const p=document.createElement('p');p.style.margin='6px 0';const s=document.createElement('strong');s.textContent=title+': ';p.append(s,document.createTextNode(list+'. '));const m=document.createElement('span');m.className='muted';m.textContent=advice;p.append(m);box.append(p)};
+ if(ops.gaps.length)line('Buchi tra le prenotazioni ('+ops.gaps.length+', bordo dorato)',ops.gaps.map(g=>g.length===1?d(g[0])+' (1 notte)':d(g[0])+'–'+d(g[1])+' (2 notti)').join(', '),'Valuta un soggiorno minimo più basso o uno sconto mirato.');
+ if(ops.weekends.length)line('Weekend liberi ('+ops.weekends.length+')',ops.weekends.map(d).join(', '),'Muoviti per tempo: annuncio aggiornato o una promozione.');
+ if(!box.childNodes.length&&selectedOccupied.size){const p=document.createElement('p');p.className='muted';p.textContent='Nessun buco breve né weekend libero nel periodo.';box.append(p)}
+}
+el('radarDays').addEventListener('change',renderPrivateCalendar);
 function renderPrivateCalendar(){
  const calendar=el('toolsCalendar');calendar.replaceChildren();
  const dates=nextDates();const labelFormat=new Intl.DateTimeFormat('it-IT',{timeZone:'UTC',weekday:'long',day:'numeric',month:'long',year:'numeric'});
  for(const d of dates){
-  const key=localDate(d),b=document.createElement('button');b.type='button';b.className='privateDay';
+  const key=localDate(d),b=document.createElement('button');b.type='button';b.className='privateDay';b.dataset.day=key;
   const short=document.createElement('small');short.textContent=new Intl.DateTimeFormat('it-IT',{timeZone:'UTC',weekday:'short'}).format(d);
   const num=document.createElement('span');num.textContent=String(d.getUTCDate());
   b.append(short,num);
@@ -544,7 +576,11 @@ function renderPrivateCalendar(){
   b.addEventListener('click',()=>{if(selectedOccupied.has(key))selectedOccupied.delete(key);else selectedOccupied.add(key);toolsDirty=true;renderPrivateCalendar()});
   calendar.append(b);
  }
- const occupied=dates.filter(d=>selectedOccupied.has(localDate(d))).length,free=28-occupied;
+ const total=dates.length,occupied=dates.filter(d=>selectedOccupied.has(localDate(d))).length,free=total-occupied;
+ el('radarHeading').textContent='Radar · Prossimi '+total+' giorni';el('toolsCalendar').setAttribute('aria-label','Calendario privato '+total+' giorni');
+ const ops=radarOpportunities(dates.map(localDate),selectedOccupied);
+ for(const day of ops.gapDays)calendar.querySelector('[data-day="'+day+'"]')?.classList.add('gap');
+ renderRadarTips(ops);
  const rate=Number(el('toolRate').value),probability=Number(el('toolConversion').value);
  const estimate=free*(Number.isFinite(rate)?rate:0)*(Number.isFinite(probability)?probability:0)/100;
  el('toolsRadarSummary').textContent='Libere: '+free+' · Occupate: '+occupied+' · Ricavo lordo aggiuntivo ipotetico: '+money(estimate)+'.';
@@ -556,6 +592,27 @@ function shareForCurrentProperty(){
 function shareLink(share){
  return share?'https://hostdalontano.com/strumenti/guida.html?t='+encodeURIComponent(share.share_token):'';
 }
+// QR of the active guide link, drawn as SVG (qrcode.js, MIT). Only for published guides.
+function qrSvg(text){
+ if(typeof window.qrcode!=='function')return null;
+ const qr=window.qrcode(0,'M');qr.addData(text);qr.make();
+ const n=qr.getModuleCount(),m=4,size=n+m*2,ns='http://www.w3.org/2000/svg';
+ const svg=document.createElementNS(ns,'svg');svg.setAttribute('viewBox','0 0 '+size+' '+size);svg.setAttribute('width','100%');svg.setAttribute('height','100%');svg.setAttribute('shape-rendering','crispEdges');svg.setAttribute('role','img');svg.setAttribute('aria-label','Codice QR della guida ospiti');
+ const bg=document.createElementNS(ns,'rect');bg.setAttribute('width',size);bg.setAttribute('height',size);bg.setAttribute('fill','#fff');svg.append(bg);
+ let d='';for(let r=0;r<n;r++)for(let c=0;c<n;c++)if(qr.isDark(r,c))d+='M'+(c+m)+' '+(r+m)+'h1v1h-1z';
+ const path=document.createElementNS(ns,'path');path.setAttribute('d',d);path.setAttribute('fill','#000');svg.append(path);
+ return svg;
+}
+function renderQr(url){
+ const box=el('qrCode');box.replaceChildren();el('qrBox').hidden=!url;if(!url)return;
+ const svg=qrSvg(url);if(svg)box.append(svg);else el('qrBox').hidden=true;
+}
+el('qrDownload').addEventListener('click',()=>{
+ const svg=el('qrCode').querySelector('svg');if(!svg)return;
+ const name=(properties.find(p=>p.id===el('toolsProperty').value)?.name||'guida').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'guida';
+ const blob=new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(svg)],{type:'image/svg+xml'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='qr-guida-'+name+'.svg';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
 function updateShareView(){
  const propertyId=el('toolsProperty').value,exists=properties.some(p=>p.id===propertyId),share=shareForCurrentProperty();
  el('shareUrl').value=shareLink(share);
@@ -566,6 +623,7 @@ function updateShareView(){
  el('copyShare').disabled=!share;
  el('openShare').disabled=!share;
  el('rotateShare').disabled=!share;
+ renderQr(share&&share.is_published?shareLink(share):'');
 }
 async function reloadGuestShares(){
  guestShares=await call('/rest/v1/hdl_guest_shares?select=property_id,share_token,is_published&limit=500');
@@ -633,6 +691,13 @@ el('toolsForm').addEventListener('submit',async event=>{
   assistance_info:el('toolHelp').value.trim(),nightly_rate:rate,sale_probability:prob,
   occupied_dates:[...selectedOccupied].sort(),updated_at:new Date().toISOString()
  };
+ if(guideReady){
+  const maps=el('toolMaps').value.trim();
+  if(maps&&(maps.length>1000||!/^https:\/\//i.test(maps))){status('Il link della mappa deve iniziare con https://','error');return}
+  payload.maps_url=maps||null;const gx={};
+  document.querySelectorAll('#toolsForm .gx').forEach(n=>{const v=n.value.trim();if(v){(gx[n.dataset.lang]??={})[n.dataset.key]=v.slice(0,2000)}});
+  payload.guide_extra=gx;
+ }
  if(icalReady){try{payload.ical_airbnb=icalValue('toolIcalAirbnb','airbnb');payload.ical_booking=icalValue('toolIcalBooking','booking')}catch(error){status(error.message,'error');return}}
  btn.disabled=true;
  try{

@@ -22,26 +22,33 @@ button{font:inherit;font-weight:700;background:#2c6650;color:#fff;border:0;borde
 button:focus-visible{outline:3px solid #b9862f;outline-offset:2px}
 @media(max-width:640px){main{padding:25px 14px 40px}.grid,.row{grid-template-columns:1fr}.card{padding:19px}.card.full{grid-column:auto}}
 @media print{body{background:#fff}header,footer,#printGuide{display:none}.card{box-shadow:none;break-inside:avoid}main{padding:5px}h1{font-size:32px}}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px}.langs{display:flex;gap:6px}.langs button{background:#eef4f0;color:#24583f;padding:6px 11px;min-height:36px;font-size:13px}.langs button[aria-pressed=true]{background:#2c6650;color:#fff}.note{background:#fbf6ea;border-left:4px solid #b9862f;border-radius:8px;padding:10px 14px;font-size:14px;color:#4c4433}.maplink{display:inline-block;margin-top:4px;font-weight:700;color:#24583f}
+@media print{.langs,#langNote{display:none}}
 </style></head><body>
-<header><a href="https://hostdalontano.com/" rel="noreferrer">Host da Lontano</a></header>
+<header><a href="https://hostdalontano.com/" rel="noreferrer">Host da Lontano</a><nav class="langs" aria-label="Lingua / Language / Sprache"><button type="button" data-lang="it" lang="it">IT</button><button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="de" lang="de">DE</button></nav></header>
 <main>
-<div class="eyebrow">Benvenuti · Guida digitale</div>
+<div class="eyebrow" data-i18n="eyebrow">Benvenuti · Guida digitale</div>
 <h1 id="title">Guida ospiti</h1><p class="subtitle" id="area"></p>
-<p id="loading" class="muted" role="status" aria-live="polite">Caricamento della guida…</p>
-<div id="unavailable" class="error" hidden role="status">Questa guida non è disponibile. Il link potrebbe essere stato disattivato o sostituito. Per informazioni, contatta il referente della struttura attraverso il canale concordato nella prenotazione.</div>
+<p id="loading" class="muted" role="status" aria-live="polite" data-i18n="loading">Caricamento della guida…</p>
+<div id="unavailable" class="error" hidden role="status" data-i18n="unavailable">Questa guida non è disponibile. Il link potrebbe essere stato disattivato o sostituito. Per informazioni, contatta il referente della struttura attraverso il canale concordato nella prenotazione.</div>
 <div id="guide" hidden>
+<p id="langNote" class="note" hidden></p>
 <div class="grid">
-<section class="card full"><h2>Arrivo e partenza</h2><div class="row"><div><div class="muted">Check-in</div><div id="checkin" class="big"></div></div><div><div class="muted">Check-out</div><div id="checkout" class="big"></div></div></div></section>
-<section class="card"><h2>Parcheggio</h2><p id="parking" class="detail"></p></section>
-<section class="card"><h2>Wi-Fi · nome rete</h2><p id="wifi" class="detail"></p><small>Per la password fai riferimento alle istruzioni comunicate dalla struttura.</small></section>
-<section class="card"><h2>Regole della casa</h2><p id="rules" class="detail"></p></section>
-<section class="card"><h2>Rifiuti e raccolta differenziata</h2><p id="waste" class="detail"></p></section>
-<section class="card full"><h2>Assistenza</h2><p id="assistance" class="detail"></p></section>
+<section class="card full"><h2 data-i18n="arrival">Arrivo e partenza</h2><div class="row"><div><div class="muted">Check-in</div><div id="checkin" class="big"></div></div><div><div class="muted">Check-out</div><div id="checkout" class="big"></div></div></div></section>
+<section class="card full" id="boxDirections"><h2 data-i18n="directions">Come arrivare</h2><p id="directions" class="detail"></p><p id="mapsBox" hidden><a id="mapsLink" class="maplink" href="#" target="_blank" rel="noopener noreferrer" data-i18n="maps">Apri in Google Maps</a></p></section>
+<section class="card" id="boxParking"><h2 data-i18n="parking">Parcheggio</h2><p id="parking" class="detail"></p></section>
+<section class="card" id="boxWifi"><h2 data-i18n="wifi">Wi-Fi · nome rete</h2><p id="wifi" class="detail"></p><small data-i18n="wifiNote">Per la password fai riferimento alle istruzioni comunicate dalla struttura.</small></section>
+<section class="card" id="boxRules"><h2 data-i18n="rules">Regole della casa</h2><p id="rules" class="detail"></p></section>
+<section class="card" id="boxWaste"><h2 data-i18n="waste">Rifiuti e raccolta differenziata</h2><p id="waste" class="detail"></p></section>
+<section class="card" id="boxTips"><h2 data-i18n="tips">Consigli sulla zona</h2><p id="tips" class="detail"></p></section>
+<section class="card" id="boxDeparture"><h2 data-i18n="departure">Prima di partire</h2><p id="departure" class="detail"></p></section>
+<section class="card full" id="boxEmergency"><h2 data-i18n="emergency">Numeri utili ed emergenze</h2><p id="emergency" class="detail"></p><p class="muted" data-i18n="emergencyNote">In caso di emergenza chiama il 112, numero unico europeo.</p></section>
+<section class="card full" id="boxAssistance"><h2 data-i18n="assistance">Assistenza</h2><p id="assistance" class="detail"></p></section>
 </div>
-<p class="muted" style="font-size:13px;margin-top:22px">Le informazioni sono fornite dal gestore della struttura. In caso di emergenza, usa i numeri di emergenza locali e le indicazioni ufficiali.</p>
-<button type="button" id="printGuide">Stampa o salva questa guida</button>
+<p class="muted" style="font-size:13px;margin-top:22px" data-i18n="disclaimer">Le informazioni sono fornite dal gestore della struttura. In caso di emergenza, usa i numeri di emergenza locali e le indicazioni ufficiali.</p>
+<button type="button" id="printGuide" data-i18n="print">Stampa o salva questa guida</button>
 </div>
 </main>
-<footer>Host da Lontano · Guida accessibile soltanto tramite link attivo</footer>
+<footer data-i18n="footer">Host da Lontano · Guida accessibile soltanto tramite link attivo</footer>
 <script src="guida.js"></script>
 </body></html>
