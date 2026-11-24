@@ -326,10 +326,10 @@ function effectiveFee(propertyId,start,end){
   const cutoff=addMonthsDateString(p.contract_start,3);
   if(!cutoff)return {error:'Data promozionale non valida.'};
   if(start<cutoff&&end>=cutoff)return {error:'Il periodo attraversa il cambio tariffa del '+cutoff+'. Crea due compensi separati: uno fino al giorno prima e uno dal '+cutoff+'.'};
-  if(start<cutoff)return {rate:0.05,label:'5% · lancio fino al '+cutoff+' escluso'};
-  return {rate:0.07,label:'7% · promozione terminata dal '+cutoff};
+  if(start<cutoff)return {rate:0.10,label:'10% · lancio fino al '+cutoff+' escluso'};
+  return {rate:0.12,label:'12% · promozione terminata dal '+cutoff};
  }
- return {rate:0.07,label:'7% · gestione ordinaria'};
+ return {rate:0.12,label:'12% · gestione ordinaria'};
 }
 function togglePaidAt(){
  const paid=el('feeStatus').value==='paid';
